@@ -1,0 +1,12 @@
+#Code format
+BasedOnStyle: Google
+# Indent width
+IndentWidth: 4
+# Tab width
+TabWidth: 4
+# Use tabs
+UseTab: Never
+# Column limit
+ColumnLimit: 120
+# Allow short functions to be on one line
+AllowShortFunctionsOnASingleLine: Inline

@@ -8,18 +8,18 @@
 // Motor principal de la base de datos.
 class Db_engine {
    private:
-    file_manager file_m;
+    File_manager* file_m;
 
    public:
     enum mode { avl_tree = 0, isam, ext_hash };
 
-    db_engine(mode type, std::string file_name);
-    ~db_engine();
+    Db_engine(mode type, std::string file_name);
+    ~Db_engine();
     std::string execute(std::string query);
 
     // Subrutinas deberian ser privadas. Publicas para pruebas.
-    std::vector<Register> search(TK key);
-    std::vector<Register> range_search(TK begin_key, TK end_key);
+    std::vector<Register> search(T key);
+    std::vector<Register> range_search(T begin_key, T end_key);
     bool add(Register data);
-    bool remove(TK key);
+    bool remove(T key);
 };

@@ -12,8 +12,6 @@ struct Register {
     float value;
 };
 
-
-
 typedef int T;
 
 // Clase abstracta para el manejo de archivos

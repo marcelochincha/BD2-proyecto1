@@ -3,27 +3,32 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <iostream>
 
 #define MAX_DEPTH 1
 #define PAGE_SIZE 4096
 
 // MD y MI son el número de registros que caben en una página de datos e índice.
-const int MI = (TAM_PAGE - sizeof(int) - sizeof(long)) / ((sizeof(int) + sizeof(long)));
-const int MD = (TAM_PAGE - sizeof(int) - sizeof(long)) / (sizeof(Record));
+const int MI = (PAGE_SIZE - sizeof(int) - sizeof(long)) / ((sizeof(int) + sizeof(long)));
+const int MD = (PAGE_SIZE - sizeof(int) - sizeof(long)) / (sizeof(Register));
 
-// INDICE
+// Pagina de indices
 struct IndexPage {
     int n;
     int keys[MI];
     long pages[MI + 1];
 };
 
-// DATOS
+// Pagina de datos
 struct DataPage {
     int n;
     long nextPage;  // -1 si es el ultimo registro, en bytes desde el inicio del archivo
     Register records[MD];
 };
+
+//TEST
+
+
 
 // Clase para el manejo de archivos con ISAM
 class Isam : public File_manager {
@@ -31,16 +36,17 @@ class Isam : public File_manager {
     // Iniciar archivos
     void init_file() {
         // Crear archivos de índice
+        std::cout << "Creating index files... \n";
         std::fstream f;
         for (int i = 0; i < MAX_DEPTH; i++) {
-            f.open(idxName(i), std::ios::binary | std::ios::in | std::ios::out);
-            IndexPage indexPage{0};
+            f.open(this->idxName(i), std::ios::binary | std::ios::in | std::ios::out | std::ios::app);
+            IndexPage indexPage{};
             f.write((char *)&indexPage, sizeof(IndexPage));
             f.close();
         }
 
         // Crear archivo de datos
-        f.open("data.dat", std::ios::binary | std::ios::in | std::ios::out);
+        f.open(this->filename + EXT_STR, std::ios::binary | std::ios::in | std::ios::out | std::ios::app);
     };
 
    public:
@@ -52,17 +58,19 @@ class Isam : public File_manager {
     std::vector<Register> search(T key) {
         // Iniciar busqueda
         std::fstream f;
-        long nextPage = this->getDataPage(f, data.id);
+        long nextPage = this->getDataPage(f, key);
 
         // Buscar en el data page seleccionado
-        std::vector<Record> found;
+        std::vector<Register> found;
         f.open(this->filename + EXT_STR, std::ios::binary | std::ios::in | std::ios::out);
-        this->searchInPage(data.id, nextPage, found, f);
+        this->searchInPage(key, nextPage, found, f);
         f.close();
         return found;
     };
 
-    std::vector<Register> range_search(T begin_key, T end_key){};
+    std::vector<Register> range_search(T begin_key, T end_key){
+        return std::vector<Register>();
+    };
 
     bool add(Register data) {
         // Iniciar busqueda
@@ -71,7 +79,7 @@ class Isam : public File_manager {
 
         // Insertar en el data page seleccionado
         f.open(this->filename + EXT_STR, std::ios::binary | std::ios::in | std::ios::out);
-        bool result = addToPage(record, nextPage, f);
+        bool result = addToPage(data, nextPage, f);
         f.close();
         return result;
     };
@@ -88,26 +96,26 @@ class Isam : public File_manager {
         }
 
         if (MAX_DEPTH != 1) {
-            throw std::bad_exception("This value should be 1.");
+            throw std::runtime_error("This value should be 1.");
             return;
         }
 
         std::fstream indxFile(idxName(0), std::ios::binary | std::ios::in | std::ios::out);
         std::fstream dataFile(this->filename + EXT_STR, std::ios::binary | std::ios::in | std::ios::out);
 
-        data.seekp(0, std::ios::beg);
+        dataFile.seekp(0, std::ios::beg);
         indxFile.seekp(0, std::ios::beg);
         IndexPage indexBuffer{0};
 
-        for (int i = 0; i < keys.size(); i++) {
+        for (size_t i = 0; i < keys.size(); i++) {
             indexBuffer.keys[i] = keys[i];
-            indexBuffer.pages[i] = data.tellp();
+            indexBuffer.pages[i] = dataFile.tellp();
             DataPage dataPage{0, -1};
             dataFile.write((char *)&dataPage, sizeof(DataPage));
-            indexPage.n++;
+            indexBuffer.n++;
         }
 
-        indxFile.write((char *)&indexPage, sizeof(IndexPage));
+        indxFile.write((char *)&indxFile, sizeof(IndexPage));
         indxFile.close();
         dataFile.close();
     };
@@ -119,7 +127,7 @@ class Isam : public File_manager {
     template <typename PageType>
     PageType loadPage(int pageToload, std::fstream &f) {
         PageType toReturn{};
-        f.seekg(pageToload * TAM_PAGE);
+        f.seekg(pageToload * PAGE_SIZE);
         f.read((char *)&toReturn, sizeof(PageType));
         return toReturn;
     };
@@ -146,6 +154,8 @@ class Isam : public File_manager {
             f.close();
             nextPage = this->returnPage(currentIndexPage, key);
         }
+
+        return nextPage;
     }
 
     bool fileExists(const std::string &name) {
@@ -156,7 +166,7 @@ class Isam : public File_manager {
     //
     // OPERACIONES
     //
-    bool addToPage(const Record &record, long pagePos, std::fstream &f) {
+    bool addToPage(const Register &record, long pagePos, std::fstream &f) {
         // Cargar la página
         DataPage data = this->loadPage<DataPage>(pagePos, f);
 
@@ -187,7 +197,7 @@ class Isam : public File_manager {
         return true;
     }
 
-    bool searchInPage(const T key, long pagePos, std::vector<Record> &buffer, std::fstream &f) {
+    bool searchInPage(const T key, long pagePos, std::vector<Register> &buffer, std::fstream &f) {
         DataPage data = loadPage<DataPage>(pagePos, f);
         bool founded = false;
         bool checkNext = false;

@@ -31,5 +31,8 @@
 *.out
 *.app
 
+# .dat and .idx
+*.dat
+*.idx
 
 /.vscode

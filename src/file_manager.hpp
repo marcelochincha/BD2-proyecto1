@@ -1,18 +1,25 @@
 #pragma once
+#include <format>
+#include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 
-#define EXT_STR ".dat"
+#define DAT_EXT ".dat"
+#define IDX_EXT ".idx"
+#define AUX_EXT ".aux"
 
 // Registro de datos
 struct Register {
     int id;
     char name[15];
     float value;
+
 };
 
 typedef int T;
+
+int keyCmp(T key1, T key2);
 
 // Clase abstracta para el manejo de archivos
 class File_manager {

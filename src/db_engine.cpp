@@ -1,8 +1,8 @@
 #include "db_engine.hpp"
-#include "Isam.hpp"
 
 
 Db_engine::Db_engine(Db_engine::mode type, std::string file_name) {
+    std::cout << "Creating new db..." << std::endl;
     this->file_m = new Isam(file_name);
 }
 

@@ -1,9 +1,8 @@
-#include "Isam.hpp"
+#include "isam.hpp"
 
 //
 // PUBLIC
 //
-
 
 // Constructor
 Isam::Isam(std::string _filename) : File_manager(_filename) {

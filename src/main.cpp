@@ -25,6 +25,14 @@ int main() {
         std::cout << "FOUND:" << r;
     }
 
+    db.remove(2);
+
+    // comprobar si esta eliminado
+    result = db.search(2);
+    for (auto &r : result) {
+        std::cout << "FOUND:" << r;
+    }
+
     std::cout << "Done!" << std::endl;
     return 0;
 }

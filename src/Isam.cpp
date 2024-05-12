@@ -1,4 +1,4 @@
-#include "isam.hpp"
+#include "Isam.hpp"
 
 //
 // PUBLIC
@@ -47,7 +47,17 @@ bool Isam::add(Register data) {
 };
 
 bool Isam::remove(T key) {
-    return false;
+    // Iniciar busqueda
+    long nextPage = getDataPage(key);
+
+    // Buscar en el data page seleccionado
+    std::fstream f;
+    std::vector<Register> found;
+    f.open(this->dataName(), std::ios::binary | std::ios::in | std::ios::out);
+    bool result = this->removeInPage(key, nextPage, f);
+    f.close();
+
+    return result;
 };
 
 // DEBUG
@@ -205,5 +215,26 @@ bool Isam::searchInPage(const T key, long pagePos, std::vector<Register> &buffer
         }
     }
     if (checkNext) this->searchInPage(key, data.nextPage, buffer, f);
+    return founded;
+}
+
+bool Isam::removeInPage(const T key, long pagePos, std::fstream &f){
+    DataPage data = this->loadPage<DataPage>(pagePos, f);
+    bool founded = false;
+    bool checkNext = false;
+    for (int i = 0; i < data.n; i++) {
+        if (keyCmp(key, data.records[i].id) == 0) {
+            founded = true;
+            // Eliminar el registro (remplazar con el ultimo registro)
+            data.records[i] = data.records[data.n - 1];
+            data.n--;
+            f.seekp(pagePos, std::ios::beg);
+            f.write((char *)&data, sizeof(DataPage));
+        } else if (founded) {
+            checkNext = true;
+            break;
+        }
+    }
+    if (checkNext) this->removeInPage(key, data.nextPage, f);
     return founded;
 }

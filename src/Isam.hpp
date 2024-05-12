@@ -59,4 +59,5 @@ class Isam : public File_manager {
     //
     bool addToPage(const Register &record, long pagePos, std::fstream &f);
     bool searchInPage(const T key, long pagePos, std::vector<Register> &buffer, std::fstream &f);
+    bool removeInPage(const T key, long pagePos, std::fstream &f);
 };

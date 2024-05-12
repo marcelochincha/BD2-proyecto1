@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "file_manager.hpp"
-#include "isam.hpp"
+#include "Isam.hpp"
 
 // Motor principal de la base de datos.
 class Db_engine {

@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include "db_engine.hpp"
+#include "Table.hpp"
 
 
 std::ostream& operator<<(std::ostream &os, const Register &r) {
@@ -11,8 +11,9 @@ std::ostream& operator<<(std::ostream &os, const Register &r) {
 int main() {
     std::cout << "START!" << std::endl;
 
+/*
     //Test db_engine
-    Db_engine db(Db_engine::mode::isam,"data");
+    Table db(Table::mode::isam,"data");
     
     db.add(Register{1, "Juan", 10.5});
     db.add(Register{2, "Pedro", 20.5});
@@ -32,6 +33,11 @@ int main() {
     for (auto &r : result) {
         std::cout << "FOUND:" << r;
     }
+*/
+
+    //SQL PARSER TEST
+    
+
 
     std::cout << "Done!" << std::endl;
     return 0;

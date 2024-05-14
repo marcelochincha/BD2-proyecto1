@@ -1,23 +1,15 @@
 #pragma once
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <string>
 #include <vector>
+
+#include "register.hpp"
 
 #define DAT_EXT ".dat"
 #define IDX_EXT ".idx"
 #define AUX_EXT ".aux"
-
-// Registro de datos
-struct Register {
-    int id;
-    char name[15];
-    float value;
-
-};
-
-typedef int T;
 
 int keyCmp(T key1, T key2);
 

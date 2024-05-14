@@ -6,7 +6,7 @@
 #include "file_manager.hpp"
 #include "Isam.hpp"
 
-// Motor principal de la base de datos.
+// Tabla de base de datos 
 class Table {
    private:
     File_manager* file_m;
@@ -18,8 +18,6 @@ class Table {
     ~Table();
 
     std::string getName();
-
-    // Subrutinas deberian ser privadas. Publicas para pruebas.
     std::vector<Register> search(T key);
     std::vector<Register> range_search(T begin_key, T end_key);
     bool add(Register data);

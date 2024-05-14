@@ -36,3 +36,4 @@
 *.idx
 
 /.vscode
+/tests

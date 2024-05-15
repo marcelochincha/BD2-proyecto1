@@ -64,7 +64,7 @@ std::vector<Register> Ext_Hash::search(T key) {
 
     std::vector<Register> result;
     for (int i = 0; i < bucket.size; i++) {
-        if (bucket.registers[i].id == key) result.push_back(bucket.registers[i]);
+        if (bucket.registers[i].CustomerID == key) result.push_back(bucket.registers[i]);
     }
     return result;
 }
@@ -78,7 +78,7 @@ bool Ext_Hash::add(Register reg) {
 
     std::fstream file(this->filename, std::ios::binary | std::ios::in | std::ios::out);
 
-    int dir_pointer = hash_function(reg.id, this->gd);
+    int dir_pointer = hash_function(reg.CustomerID, this->gd);
     int pointer = get_pointer(index, dir_pointer);
 
     Bucket bucket = read_bucket(file, pointer);

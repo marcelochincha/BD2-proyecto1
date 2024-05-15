@@ -35,7 +35,7 @@ std::vector<Register> Isam::range_search(T begin_key, T end_key) {
 
 bool Isam::add(Register data) {
     // Iniciar busqueda
-    long nextPage = getDataPage(data.id);
+    long nextPage = getDataPage(data.CustomerID);
     //std::cout << "Next page: " << nextPage << std::endl;
 
     // Insertar en el data page seleccionado
@@ -206,7 +206,7 @@ bool Isam::searchInPage(const T key, long pagePos, std::vector<Register> &buffer
     bool founded = false;
     bool checkNext = false;
     for (int i = 0; i < data.n; i++) {
-        if (keyCmp(key, data.records[i].id) == 0) {
+        if (keyCmp(key, data.records[i].CustomerID) == 0) {
             buffer.push_back(data.records[i]);
             founded = true;
         } else if (founded) {
@@ -223,7 +223,7 @@ bool Isam::removeInPage(const T key, long pagePos, std::fstream &f){
     bool founded = false;
     bool checkNext = false;
     for (int i = 0; i < data.n; i++) {
-        if (keyCmp(key, data.records[i].id) == 0) {
+        if (keyCmp(key, data.records[i].CustomerID) == 0) {
             founded = true;
             // Eliminar el registro (remplazar con el ultimo registro)
             data.records[i] = data.records[data.n - 1];

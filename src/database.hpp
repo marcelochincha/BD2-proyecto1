@@ -15,4 +15,9 @@ class Database {
 
    private:
     std::unordered_map<std::string, Table*> tables;
+
+    std::string create_table(std::queue<std::string>& tokens);
+    std::string insert(std::queue<std::string>& tokens);
+    std::string select(std::queue<std::string>& tokens);
+    std::string remove(std::queue<std::string>& tokens);
 };

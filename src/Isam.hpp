@@ -17,7 +17,7 @@ const int MD = (PAGE_SIZE - sizeof(int) - sizeof(long)) / (sizeof(Register));
 // Pagina de indices
 struct IndexPage {
     int n;
-    int keys[MI];
+    T keys[MI];
     long pages[MI + 1];
 };
 

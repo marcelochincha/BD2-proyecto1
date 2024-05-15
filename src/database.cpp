@@ -47,6 +47,16 @@ bool assignString(char* c, std::queue<std::string>& tokens) {
     return true;
 }
 
+std::queue<std::string> separateBy(std::string str, char delim) {
+    std::queue<std::string> tokens;
+    std::stringstream ss(str);
+    std::string token;
+    while (std::getline(ss, token, delim)) {
+        tokens.push(token);
+    }
+    return tokens;
+}
+
 bool getRegister(Register& r, std::string data) {
     // Remover parentesis
     data = data.substr(1, data.size() - 2);
@@ -62,15 +72,7 @@ bool getRegister(Register& r, std::string data) {
     return false;
 }
 
-std::queue<std::string>& separateBy(std::string str, char delim) {
-    std::queue<std::string> tokens;
-    std::stringstream ss(str);
-    std::string token;
-    while (std::getline(ss, token, delim)) {
-        tokens.push(token);
-    }
-    return tokens;
-}
+
 
 std::string Database::execute(std::string query) {
     // Tokenize
@@ -139,6 +141,8 @@ std::string Database::create_table(std::queue<std::string>& tokens) {
     }
     tables[table_name] = new Table(type, table_name);
 
+
+
     return "Table created " + table_name + ", with data from:" + file_path + " with index" + table_type + ". (SUCCESS)";
 }
 
@@ -186,7 +190,6 @@ std::string Database::select(std::queue<std::string>& tokens) {
     if (field != "CustomerID") {
         return "Invalid field to search (must be CustomerID)";
     }
-
     tokens.pop();
 
     std::string compType = tokens.front();
@@ -194,7 +197,8 @@ std::string Database::select(std::queue<std::string>& tokens) {
 
     std::string res = "";
     Table* table = tables[table_name];
-    if (compType == "BETWEEN") {
+    std::vector<Register> result;
+     if (compType == "BETWEEN") {
         tokens.pop();  // Remove BETWEEN
         std::string value1 = tokens.front();
         tokens.pop();
@@ -204,26 +208,22 @@ std::string Database::select(std::queue<std::string>& tokens) {
         if (tables.find(table_name) == tables.end()) {
             return "Table not found";
         }
-
-        std::vector<Register> result = table->range_search(std::stoi(value1), std::stoi(value2));
-        std::string res = "";
-        for (int i = 0; i < result.size(); i++) {
-            res += register_to_string(result[i]) + "\n";
-        }
-
-    } else if (compType == "=") {
+        result = table->range_search(std::stoi(value1), std::stoi(value2));
+    }
+    else if (compType == "=") {
         std::string value = tokens.front();
         tokens.pop();
         if (tables.find(table_name) == tables.end()) {
             return "Table not found";
         }
-        std::vector<Register> result = table->search(std::stoi(value));
-
-        for (int i = 0; i < result.size(); i++) {
-            res += register_to_string(result[i]) + "\n";
-        }
-    } else
+        result = table->search(std::stoi(value));
+    }
+    else 
         return "Invalid comparison type :" + compType;
+
+    for (size_t i = 0; i < result.size(); i++) {
+        res += register_to_string(result[i]) + "\n";
+    }
     return res;
 }
 

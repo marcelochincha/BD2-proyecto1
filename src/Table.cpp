@@ -1,4 +1,4 @@
-#include "table.hpp"
+#include "Table.hpp"
 
 
 Table::Table(Table::mode type, std::string file_name) {

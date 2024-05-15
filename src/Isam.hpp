@@ -7,7 +7,7 @@
 
 #include "file_manager.hpp"
 
-#define MAX_DEPTH 1
+#define MAX_DEPTH 2
 #define PAGE_SIZE 1024
 
 // MD y MI son el número de registros que caben en una página de datos e índice.

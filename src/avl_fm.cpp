@@ -13,13 +13,33 @@ struct Register {
 };
 
 class File_manager {
-   protected:
+protected:
     std::string filename;
-    virtual void init_file() = 0;
-
-   public:
-    File_manager(const std::string& _filename) : filename(_filename + DAT_EXT) {
+    void init() {
+        filename += DAT_EXT;
         init_file();
+    }
+    void init_file() {
+        std::fstream file(filename, std::ios::app | std::ios::binary | std::ios::in | std::ios::out);
+
+        file.seekg(0, std::ios::end);
+        int bytes = file.tellg();
+
+        if (bytes == 0) {
+            std::cout << "Creating file..." << std::endl;
+            int root = -1;
+            file.write(reinterpret_cast<const char*>(&root), sizeof(int));
+        } else {
+            file.seekg(0, std::ios::beg);
+            std::cout << "Reading file..." << std::endl;
+        }
+
+        file.close();
+    }
+
+public:
+    File_manager(const std::string& _filename) : filename(_filename) {
+        init();
     }
 
     virtual ~File_manager() {}
@@ -30,7 +50,7 @@ class File_manager {
 };
 
 class AVLFile : public File_manager {
-   private:
+private:
     struct Node {
         int key;
         int left;
@@ -38,16 +58,29 @@ class AVLFile : public File_manager {
         int height;
     };
 
-   public:
-    AVLFile(const std::string& filename) : File_manager(filename) {}
+    int root; // Almacenar la posición de la raíz del árbol en el archivo
+
+public:
+    AVLFile(const std::string& filename) : File_manager(filename), root(-1) {
+        std::fstream file(filename, std::ios::binary | std::ios::in | std::ios::out);
+        if (!file.is_open()) {
+            std::cerr << "Error: Could not open file for reading and writing." << std::endl;
+            return;
+        }
+
+        file.read(reinterpret_cast<char*>(&root), sizeof(int));
+        file.close();
+    }
 
     std::vector<Register> search(int key) override;
     std::vector<Register> range_search(int begin_key, int end_key) override;
     bool add(const Register& data) override;
     bool remove(int key) override;
 
-   private:
-    void init_file() override;
+private:
+    void init_file() {
+    }
+
     int find(int key, std::fstream& file, int pos);
     void insert(const Register& data, std::fstream& file, int& new_pos, int actual_pos, int parent_pos);
     void update_header(std::fstream& file, int new_root);
@@ -65,72 +98,6 @@ class AVLFile : public File_manager {
     void right_rotation(std::fstream& file, int pos, int parent_pos);
     void search_in_range(std::fstream& file, int pos, int low, int high, std::vector<Register>& results);
 };
-
-void AVLFile::init_file() {
-    std::fstream file(filename, std::ios::app | std::ios::binary | std::ios::in | std::ios::out);
-
-    file.seekg(0, std::ios::end);
-    int bytes = file.tellg();
-
-    if (bytes == 0) {
-        std::cout << "Creating file..." << std::endl;
-        int root = -1;
-        file.write(reinterpret_cast<const char*>(&root), sizeof(int));
-    } else {
-        file.seekg(0, std::ios::beg);
-        std::cout << "Reading file..." << std::endl;
-    }
-
-    file.close();
-}
-
-bool AVLFile::add(const Register& data) {
-    std::fstream file(filename, std::ios::binary | std::ios::in | std::ios::out);
-    if (!file) {
-        std::cerr << "Error: Could not open file." << std::endl;
-        return false;
-    }
-
-    int new_pos = 0;
-    int actual_pos = 0;
-
-    file.seekp(0, std::ios::end);
-    int pos = file.tellp();
-    pos -= sizeof(int);
-    pos /= sizeof(Node);
-
-    file.write(reinterpret_cast<const char*>(&data), sizeof(Register));
-
-    if (pos == -1) {
-        update_header(file, new_pos);
-        return true;
-    }
-
-    insert(data, file, new_pos, actual_pos, -1);
-    file.close();
-    return true;
-}
-
-void AVLFile::insert(const Register& data, std::fstream& file, int& new_pos, int actual_pos, int parent_pos) {
-    int current_key = get_key(file, actual_pos);
-
-    if (data.id < current_key) {
-        if (get_left(file, actual_pos) == -1) {
-            write_left(file, actual_pos, new_pos);
-        } else {
-            insert(data, file, new_pos, get_left(file, actual_pos), actual_pos);
-        }
-    } else if (data.id > current_key) {
-        if (get_right(file, actual_pos) == -1) {
-            write_right(file, actual_pos, new_pos);
-        } else {
-            insert(data, file, new_pos, get_right(file, actual_pos), actual_pos);
-        }
-    }
-
-    update_height(file, actual_pos);
-    balance(file, actual_pos, parent_pos);
-}
 
 int AVLFile::find(int key, std::fstream& file, int pos) {
     file.seekg((pos * sizeof(Node)) + sizeof(int), std::ios::beg);
@@ -156,7 +123,7 @@ std::vector<Register> AVLFile::search(int key) {
     std::vector<Register> results;
     std::fstream file(filename, std::ios::binary | std::ios::in);
 
-    int pos = find(key, file, 0);
+    int pos = find(key, file, root);
     if (pos != -1) {
         file.seekg(pos * sizeof(Node) + sizeof(int), std::ios::beg);
         Register record;
@@ -217,99 +184,165 @@ void AVLFile::update_header(std::fstream& file, int new_root) {
 }
 
 void AVLFile::update_height(std::fstream& file, int pos) {
-    int left = get_left(file, pos);
-    int right = get_right(file, pos);
-
-    int new_height = std::max(get_height(file, left), get_height(file, right)) + 1;
-    write_height(file, pos, new_height);
+    int left_height = get_height(file, get_left(file, pos));
+    int right_height = get_height(file, get_right(file, pos));
+    int height = (left_height > right_height ? left_height : right_height) + 1;
+    write_height(file, pos, height);
 }
 
 int AVLFile::balancing_factor(std::fstream& file, int pos) {
-    int left = get_height(file, get_left(file, pos));
-    int right = get_height(file, get_right(file, pos));
-    return left - right;
-}
-
-void AVLFile::balance(std::fstream& file, int pos, int parent_pos) {
-    int bf = balancing_factor(file, pos);
-    if (bf > 1) {
-        if (balancing_factor(file, get_left(file, pos)) < 0) {
-            left_rotation(file, get_left(file, pos), pos);
-        }
-        right_rotation(file, pos, parent_pos);
-    } else if (bf < -1) {
-        if (balancing_factor(file, get_right(file, pos)) > 0) {
-            right_rotation(file, get_right(file, pos), pos);
-        }
-        left_rotation(file, pos, parent_pos);
-    }
+    return get_height(file, get_right(file, pos)) - get_height(file, get_left(file, pos));
 }
 
 void AVLFile::left_rotation(std::fstream& file, int pos, int parent_pos) {
     int right = get_right(file, pos);
-    write_right(file, pos, get_left(file, right));
+    int right_left = get_left(file, right);
+
+    write_right(file, pos, right_left);
     write_left(file, right, pos);
-    update_height(file, pos);
-    update_height(file, right);
 
     if (parent_pos == -1) {
-        update_header(file, right);
-    } else if (get_left(file, parent_pos) == pos) {
-        write_left(file, parent_pos, right);
+        root = right;
     } else {
-        write_right(file, parent_pos, right);
+        if (get_left(file, parent_pos) == pos) {
+            write_left(file, parent_pos, right);
+        } else {
+            write_right(file, parent_pos, right);
+        }
     }
+
+    update_height(file, pos);
+    update_height(file, right);
 }
 
 void AVLFile::right_rotation(std::fstream& file, int pos, int parent_pos) {
     int left = get_left(file, pos);
-    write_left(file, pos, get_right(file, left));
+    int left_right = get_right(file, left);
+
+    write_left(file, pos, left_right);
     write_right(file, left, pos);
-    update_height(file, pos);
-    update_height(file, left);
 
     if (parent_pos == -1) {
-        update_header(file, left);
-    } else if (get_left(file, parent_pos) == pos) {
-        write_left(file, parent_pos, left);
+        root = left;
     } else {
-        write_right(file, parent_pos, left);
+        if (get_left(file, parent_pos) == pos) {
+            write_left(file, parent_pos, left);
+        } else {
+            write_right(file, parent_pos, left);
+        }
+    }
+
+    update_height(file, pos);
+    update_height(file, left);
+}
+
+void AVLFile::balance(std::fstream& file, int pos, int parent_pos) {
+    while (pos != -1) {
+        update_height(file, pos);
+        int bf = balancing_factor(file, pos);
+
+        if (bf == 2) {
+            if (balancing_factor(file, get_right(file, pos)) < 0) {
+                right_rotation(file, get_right(file, pos), pos);
+            }
+            left_rotation(file, pos, parent_pos);
+        } else if (bf == -2) {
+            if (balancing_factor(file, get_left(file, pos)) > 0) {
+                left_rotation(file, get_left(file, pos), pos);
+            }
+            right_rotation(file, pos, parent_pos);
+        }
+
+        if (parent_pos == -1) {
+            pos = get_left(file, pos);
+        } else {
+            if (get_left(file, parent_pos) == pos) {
+                pos = get_left(file, pos);
+            } else {
+                pos = get_right(file, pos);
+            }
+        }
+    }
+}
+
+void AVLFile::insert(const Register& data, std::fstream& file, int& new_pos, int actual_pos, int parent_pos) {
+    if (actual_pos == -1) {
+        Node node;
+        node.key = data.id;
+        node.left = -1;
+        node.right = -1;
+        node.height = 1;
+
+        file.seekp(0, std::ios::end);
+        new_pos = file.tellp() / sizeof(Node);
+
+        if (parent_pos == -1) {
+            root = new_pos;
+        } else {
+            if (get_left(file, parent_pos) == actual_pos) {
+                write_left(file, parent_pos, new_pos);
+            } else {
+                write_right(file, parent_pos, new_pos);
+            }
+        }
+
+        file.write(reinterpret_cast<const char*>(&node), sizeof(Node));
+        file.write(reinterpret_cast<const char*>(&data), sizeof(Register));
+    } else if (data.id < get_key(file, actual_pos)) {
+        insert(data, file, new_pos, get_left(file, actual_pos), actual_pos);
+    } else {
+        insert(data, file, new_pos, get_right(file, actual_pos), actual_pos);
+    }
+
+    balance(file, actual_pos, parent_pos);
+}
+
+bool AVLFile::add(const Register& data) {
+    std::fstream file(filename, std::ios::binary | std::ios::in | std::ios::out);
+    if (!file.is_open()) {
+        std::cerr << "Error: Could not open file for writing." << std::endl;
+        return false;
+    }
+
+    int new_pos;
+    insert(data, file, new_pos, root, -1);
+
+    file.close();
+    return true;
+}
+
+void AVLFile::search_in_range(std::fstream& file, int pos, int low, int high, std::vector<Register>& results) {
+    if (pos == -1) return;
+
+    int key = get_key(file, pos);
+    if (key >= low && key <= high) {
+        file.seekg(sizeof(Node) * pos + sizeof(int), std::ios::beg);
+        Register record;
+        file.read(reinterpret_cast<char*>(&record), sizeof(Register));
+        results.push_back(record);
+    }
+
+    if (key > low) {
+        search_in_range(file, get_left(file, pos), low, high, results);
+    }
+
+    if (key < high) {
+        search_in_range(file, get_right(file, pos), low, high, results);
     }
 }
 
 std::vector<Register> AVLFile::range_search(int begin_key, int end_key) {
     std::vector<Register> results;
     std::fstream file(filename, std::ios::binary | std::ios::in);
+    if (!file.is_open()) {
+        std::cerr << "Error: Could not open file for reading." << std::endl;
+        return results;
+    }
 
-    search_in_range(file, 0, begin_key, end_key, results);
+    search_in_range(file, root, begin_key, end_key, results);
 
     file.close();
     return results;
-}
-
-void AVLFile::search_in_range(std::fstream& file, int pos, int low, int high, std::vector<Register>& results) {
-    if (pos == -1) {
-        return;
-    }
-
-    Node node;
-    file.seekg(pos * sizeof(Node) + sizeof(int), std::ios::beg);
-    file.read(reinterpret_cast<char*>(&node), sizeof(Node));
-
-    // Recorrer el subarbol izquierdo 
-    if (node.key > low) {
-        search_in_range(file, node.left, low, high, results);
-    }
-    if (node.key >= low && node.key <= high) {
-        Register record;
-        file.seekg(pos * sizeof(Node) + sizeof(int), std::ios::beg);
-        file.read(reinterpret_cast<char*>(&record), sizeof(Register));
-        results.push_back(record);
-    }
-
-    if (node.key < high) {
-        search_in_range(file, node.right, low, high, results);
-    }
 }
 
 bool AVLFile::remove(int key) {
@@ -320,19 +353,18 @@ bool AVLFile::remove(int key) {
     }
 
     int parent_pos = -1;
-    int pos = find(key, file, 0);
+    int pos = find(key, file, root);
     if (pos == -1) {
-        return false;  // No esta en el registro
+        return false;  // No está en el registro
     }
 
-    int current_key = get_key(file, pos);
     int left = get_left(file, pos);
     int right = get_right(file, pos);
 
     // Caso 1: El nodo no tiene hijos
     if (left == -1 && right == -1) {
         if (parent_pos == -1) {
-            update_header(file, -1);  // Actualizar el root
+            root = -1;  // Actualizar el root
         } else if (get_left(file, parent_pos) == pos) {
             write_left(file, parent_pos, -1);
         } else {
@@ -341,57 +373,86 @@ bool AVLFile::remove(int key) {
     }
     // Caso 2: El nodo tiene un hijo
     else if (left == -1 || right == -1) {
-        int child = (left == -1) ? right : left;
+        int child_pos = (left != -1) ? left : right;
         if (parent_pos == -1) {
-            update_header(file, child);  // Actualizar el root
+            root = child_pos;  // Actualizar el root
         } else if (get_left(file, parent_pos) == pos) {
-            write_left(file, parent_pos, child);
+            write_left(file, parent_pos, child_pos);
         } else {
-            write_right(file, parent_pos, child);
+            write_right(file, parent_pos, child_pos);
         }
     }
     // Caso 3: El nodo tiene dos hijos
     else {
         int successor_pos = right;
+        int successor_parent_pos = pos;
+
         while (get_left(file, successor_pos) != -1) {
+            successor_parent_pos = successor_pos;
             successor_pos = get_left(file, successor_pos);
         }
 
-        int successor_key = get_key(file, successor_pos);
-        remove(successor_key);  // Eliminar el sucesor
-        write_height(file, pos, get_height(file, pos));  // Actualizar la altura del nodo eliminado
-        balance(file, pos, parent_pos);  
+        // Elimina el sucesor
+        int successor_right = get_right(file, successor_pos);
+        if (successor_parent_pos == pos) {
+            write_right(file, successor_parent_pos, successor_right);
+        } else {
+            write_left(file, successor_parent_pos, successor_right);
+        }
+
+        // Actualiza el nodo 
+        Register successor_data;
+        file.seekg(successor_pos * sizeof(Node) + sizeof(int), std::ios::beg);
+        file.read(reinterpret_cast<char*>(&successor_data), sizeof(Register));
+        file.seekp(pos * sizeof(Node) + sizeof(int), std::ios::beg);
+        file.write(reinterpret_cast<const char*>(&successor_data), sizeof(Register));
+
+        // Mueve el sucesor a la posición del nodo a eliminar
+        pos = successor_pos;
     }
+
+    // Elimina el nodo
+    Node empty_node = {-1, -1, -1, 0};
+    file.seekp(pos * sizeof(Node), std::ios::beg);
+    file.write(reinterpret_cast<const char*>(&empty_node), sizeof(Node));
 
     file.close();
     return true;
 }
 
-
 int main() {
-    std::cout << "START!" << std::endl;
-    AVLFile file("MYDAT");
-    Register r1{1, "MARCELO1", 1.0f};
-    Register r2{2, "MARCELO2", 2.0f};
-    Register r3{3, "MARCELO3", 3.0f};
-    Register r4{4, "MARCELO4", 4.0f};
-    Register r5{5, "MARCELO5", 5.0f};
-    Register r6{6, "MARCELO6", 6.0f};
-    Register r7{7, "MARCELO7", 7.0f};
-    Register r8{8, "MARCELO8", 8.0f};
-    Register r9{9, "MARCELO9", 9.0f};
+    AVLFile avlFile("data");
+    Register data;
 
-    file.add(r1);
-    file.add(r3);
-    file.add(r2);
-    file.add(r4);
-    file.add(r9);
-    file.add(r7);
-    file.add(r5);
-    file.add(r6);
-    file.add(r8);
+    // Insertar registros de ejemplo
+    for (int i = 1; i <= 10; ++i) {
+        data.id = i;
+        strcpy(data.name, "Name");
+        data.value = i * 1.5;
+        avlFile.add(data);
+    }
 
+    // Búsqueda de registros
+    std::vector<Register> result = avlFile.search(5);
+    if (!result.empty()) {
+        std::cout << "Registro encontrado: " << result[0].id << " " << result[0].name << " " << result[0].value << std::endl;
+    } else {
+        std::cout << "Registro no encontrado." << std::endl;
+    }
 
-    std::cout << "OK!" << std::endl;
+    // Eliminar un registro
+    avlFile.remove(5);
+
+    // Búsqueda de registros en un rango
+    std::vector<Register> rangeResult = avlFile.range_search(2, 8);
+    if (!rangeResult.empty()) {
+        std::cout << "Registros en el rango encontrado: " << std::endl;
+        for (const auto& record : rangeResult) {
+            std::cout << record.id << " " << record.name << " " << record.value << std::endl;
+        }
+    } else {
+        std::cout << "No se encontraron registros en el rango especificado." << std::endl;
+    }
+
     return 0;
 }

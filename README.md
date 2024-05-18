@@ -71,9 +71,30 @@ Si el registro no está en la página principal, buscar en el área de desbordam
 Diagrama ilustrativo de la estructura de ISAM-Sparse Index que muestra cómo se relaciona el archivo de datos secuencial con el índice disperso y el área de desbordamiento
 
 ### Técnica 3: Extendible Hashing
-- Descripción de la técnica.
-- Algoritmo de inserción, eliminación y búsqueda.
-- Diagramas o gráficos ilustrativos.
+
+Extendible Hashing es una estructura de datos dinámica que se utiliza para manejar las inserciones y búsquedas eficientes en una base de datos, especialmente cuando el tamaño del conjunto de datos puede cambiar con el tiempo. Esta técnica emplea un directorio de punteros a 'buckets' donde los datos están almacenados. La clave de su adaptabilidad es la capacidad de dividir los 'buckets' que se llenan, aumentando selectivamente la profundidad local de los 'buckets' afectados sin rehashing todos los datos.
+
+#### Algoritmo de Inserción:
+
+Calcular el hash de la clave para determinar el bucket correspondiente.
+Si el bucket no está lleno, insertar el registro.
+Si el bucket está lleno, dividir el bucket:
+Incrementar la profundidad local del bucket.
+Redistribuir las entradas según el nuevo hash.
+Si es necesario, duplicar el tamaño del directorio.
+
+#### Algoritmo de Eliminación:
+
+Calcular el hash de la clave para encontrar el bucket.
+Eliminar el registro del bucket.
+Si el bucket está vacío, considerar la posibilidad de combinarlo con un bucket hermano y disminuir el tamaño del directorio.
+
+
+#### Algoritmo de Búsqueda:
+
+Calcular el hash de la clave.
+Seguir el puntero del directorio al bucket correspondiente.
+Buscar en el bucket el registro deseado.
 
 ## Análisis Comparativo Teórico
 

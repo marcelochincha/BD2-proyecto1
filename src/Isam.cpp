@@ -16,7 +16,22 @@ Isam::Isam(std::string _filename) : File_manager(_filename) {
         this->DEBUG_addIndexData(consumer_id);
     } else
         this->loaded = true;
+
+    // this->showTree();
 };
+
+void Isam::showTree() {
+    std::fstream f;
+    f.open(this->idxName(1), std::ios::binary | std::ios::in);
+    for (int i = 0; i < MI * MI; i++) {
+        IndexPage currentIndexPage = this->loadPage<IndexPage>(i * sizeof(IndexPage), f);
+        std::cout << "Index PAGE:  " << i << " loc: " << (i * sizeof(IndexPage)) << std::endl;
+        for (int i = 0; i < currentIndexPage.n; i++) {
+            std::cout << currentIndexPage.pages[i] << " ";
+        }
+        std::cout << std::endl;
+    }
+}
 
 // Destructor
 Isam::~Isam(){};
@@ -29,7 +44,10 @@ std::vector<Register> Isam::search(T key) {
     std::fstream f;
     std::vector<Register> found;
     f.open(this->dataName(), std::ios::binary | std::ios::in | std::ios::out);
-    this->searchInPage(key, nextPage, found, f);
+    bool res = this->searchInPage(key, nextPage, found, f);
+    if (!res) {
+        std::cout << "Not found" << std::endl;
+    }
     f.close();
     return found;
 };
@@ -80,20 +98,22 @@ void Isam::DEBUG_addIndexData(const int keys[consumer_id_data_size]) {
         return;
     }
 
+    int n = consumer_id_data_size;
+
+    std::cout << "Creating index with MI: " << MI << "& MD: " << MD << std::endl;
+    // Create data
     std::fstream dataFile(this->dataName(), std::ios::binary | std::ios::in | std::ios::out);
     dataFile.seekp(0, std::ios::beg);
-
-    int n = consumer_id_data_size;
 
     for (int depth = 0; depth < MAX_DEPTH; depth++) {
         std::fstream indxFile;
         indxFile.open(this->idxName(depth), std::ios::binary | std::ios::in | std::ios::out);
-        
+
         indxFile.seekp(0, std::ios::beg);
 
         int p_size = pow(MI, depth);
         int step_size = n / p_size;
-        
+
         long pos = 0;
         for (size_t i = 0; i < p_size; i++) {
             int left = i * step_size;
@@ -125,9 +145,8 @@ void Isam::DEBUG_addIndexData(const int keys[consumer_id_data_size]) {
         }
         indxFile.close();
     }
-
     dataFile.close();
-};
+}
 
 //
 // PROTECTED
@@ -180,6 +199,8 @@ long Isam::getDataPage(const T key) {
         f.open(idxName(currentLevel), std::ios::binary | std::ios::in);
         IndexPage currentIndexPage = this->loadPage<IndexPage>(nextPage, f);
         f.close();
+        if (currentIndexPage.n > MI) 
+            throw std::runtime_error("Index page is OVERFITTED?");
         nextPage = this->returnPage(currentIndexPage, key);
         currentLevel++;
     }
@@ -239,22 +260,22 @@ bool Isam::addToPage(const Register &record, long pagePos, std::fstream &f) {
 
 bool Isam::searchInPage(const T key, long pagePos, std::vector<Register> &buffer, std::fstream &f) {
     DataPage data = this->loadPage<DataPage>(pagePos, f);
-    bool founded = false;
-    bool checkNext = false;
+
     for (int i = 0; i < data.n; i++) {
-        if (keyCmp(key, data.records[i].CustomerID) == 0) {
+        if (keyCmp(key, data.records[i].CustomerID) == 0) 
             buffer.push_back(data.records[i]);
-            founded = true;
-        } else if (founded) {
-            checkNext = true;
-            break;
-        }
     }
-    if (checkNext) this->searchInPage(key, data.nextPage, buffer, f);
-    return founded;
+
+    //Verificar si hay una siguiente pagina
+    if (data.nextPage != -1) 
+        return this->searchInPage(key, data.nextPage, buffer, f);
+    
+    return buffer.size() > 0;
+
 }
 
-bool Isam::recursiveRangeSearch(const T begin_key, const T end_key, int depth, long posPage, std::vector<Register> &buffer, std::fstream &f){ 
+bool Isam::recursiveRangeSearch(const T begin_key, const T end_key, int depth, long posPage,
+                                std::vector<Register> &buffer, std::fstream &f) {
     // Buscar la pagina en los indexpages
     if (depth < MAX_DEPTH) {
         f.open(idxName(depth), std::ios::binary | std::ios::in);

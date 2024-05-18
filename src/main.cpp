@@ -30,7 +30,7 @@ int main() {
     Table* tab;
 
     tab = new Table(Table::mode::isam, "datitos");
-    //readCSV("dataA.csv", tab);
+    readCSV("dataA.csv", tab);
 
     while(true){
         //Show

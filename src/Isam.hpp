@@ -9,11 +9,12 @@
 #include "file_manager.hpp"
 
 #define MAX_DEPTH 3
-#define PAGE_SIZE 768  //
+#define PAGE_SIZE_INDEX 256  //
+#define PAGE_SIZE_DATA 4096  // 4KB
 
 // MD y MI son el número de registros que caben en una página de datos e índice.
-const int MI = (PAGE_SIZE - sizeof(int) - sizeof(long)) / ((sizeof(int) + sizeof(long)));
-const int MD = (PAGE_SIZE - sizeof(int) - sizeof(long)) / (sizeof(Register));
+const int MI = (PAGE_SIZE_INDEX - sizeof(int) - sizeof(long)) / ((sizeof(int) + sizeof(long)));
+const int MD = (PAGE_SIZE_DATA - sizeof(int) - sizeof(long)) / (sizeof(Register));
 
 // Pagina de indices
 struct IndexPage {
@@ -56,6 +57,8 @@ class Isam : public File_manager {
     bool fileExists(const std::string &name);
     std::string idxName(int i);
     std::string dataName();
+    void showTree();
+
     //
     // OPERACIONES
     //

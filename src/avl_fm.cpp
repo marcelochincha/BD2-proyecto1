@@ -273,11 +273,11 @@ bool AVLFile::remove(std::fstream &file, int &pos, T key) {
 
             } else {
                 // Copia el hijo al nodo actual y luego elimina el hijo
-                file.seekg(sizeof(int) + temp sizeof(Register_avl));
+                file.seekg(sizeof(int) + temp * sizeof(Register_avl));
                 Register_avl tempReg;
-                file.read((char)&tempReg, sizeof(Register_avl));
+                file.read((char *)&tempReg, sizeof(Register_avl));
                 current = tempReg;  // Copia todos los campos
-                file.seekp(sizeof(int) + pos sizeof(Register_avl));
+                file.seekp(sizeof(int) + pos * sizeof(Register_avl));
                 file.write((char *)&current, sizeof(Register_avl));
                 pos = temp;
             }
@@ -288,12 +288,12 @@ bool AVLFile::remove(std::fstream &file, int &pos, T key) {
             file.seekg(sizeof(int) + successorPos * sizeof(Register_avl));
             file.read((char)&successor, sizeof(Register_avl));
 
-            current.CustomerID = successor.CustomerID;  // Reemplaza con el sucesor
-            file.seekp(sizeof(int) + pos sizeof(Register_avl));
-            file.write((char)&current, sizeof(Register_avl));
+            current.reg.CustomerID = successor.reg.CustomerID;  // Reemplaza con el sucesor
+            file.seekp(sizeof(int) + pos * sizeof(Register_avl));
+            file.write((char *)&current, sizeof(Register_avl));
 
             // Elimina el sucesor
-            remove(file, current.right, successor.CustomerID);
+            remove(file, current.right, successor.reg.CustomerID);
         }
         updateHeight(file, pos);  // Actualiza la altura del nodo actual
         balance(file, pos);       // Balancea el árbol
@@ -305,7 +305,7 @@ int AVLFile::min_value_node(std::fstream &file, int pos) {
     int currentPos = pos;
     Register_avl current;
     while (currentPos != -1) {
-        file.seekg(sizeof(int) + currentPos sizeof(Register_avl));
+        file.seekg(sizeof(int) + currentPos * sizeof(Register_avl));
         file.read((char *)&current, sizeof(Register_avl));
         if (current.left == -1) {
             break;

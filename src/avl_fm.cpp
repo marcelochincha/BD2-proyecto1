@@ -244,19 +244,16 @@ void AVLFile::search(std::fstream &file, int pos, T key, std::vector<Register> &
 
 void AVLFile::rangeSearch(std::fstream &file, T begin_key, T end_key, int pos, std::vector<Register> &results) {
     if (pos == -1) return;
-    std::cout << "iterating range" << std::endl;
+
     Register_avl node;
     file.seekg((pos * sizeof(Register_avl)) + sizeof(int), std::ios::beg);
     file.read((char *)&node, sizeof(Register_avl));
 
-    if (node.reg.CustomerID >= begin_key && node.reg.CustomerID <= end_key) {
-        results.push_back(node.reg);
-        rangeSearch(file, begin_key, end_key, node.left, results);
-        rangeSearch(file, begin_key, end_key, node.right, results);
-    } else if (node.reg.CustomerID < begin_key)
-        rangeSearch(file, begin_key, end_key, node.right, results);
-    else if (node.reg.CustomerID > end_key)
-        rangeSearch(file, begin_key, end_key, node.left, results);
+    if (node.reg.CustomerID > begin_key) rangeSearch(file, begin_key, end_key, node.left, results);
+
+    if (node.reg.CustomerID >= begin_key && node.reg.CustomerID <= end_key) results.push_back(node.reg);
+
+    if (node.reg.CustomerID < end_key) rangeSearch(file, begin_key, end_key, node.right, results);
 }
 
 bool AVLFile::remove(std::fstream &file, int pos, int parent_pos, T key) {

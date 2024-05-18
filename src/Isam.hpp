@@ -1,20 +1,21 @@
 #pragma once
 
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
 
-#include "consumer_id_data.hpp"
 #include "file_manager.hpp"
 
-#define MAX_DEPTH 3
-#define PAGE_SIZE_INDEX 1536  //
-#define PAGE_SIZE_DATA 4096   // 4KB
+#define MI 8  //
+#define MD 4  //
 
 // MD y MI son el número de registros que caben en una página de datos e índice.
-const int MI = (PAGE_SIZE_INDEX - sizeof(int) - sizeof(long)) / ((sizeof(int) + sizeof(long)));
-const int MD = (PAGE_SIZE_DATA - sizeof(int) - sizeof(long)) / (sizeof(Register));
+const int INDEXES = 500;
+const int PAGE_SIZE_INDEX = (MI * (sizeof(int) + sizeof(long))) + sizeof(int) + sizeof(long);
+const int PAGE_SIZE_DATA = (MD * sizeof(Register)) + sizeof(int) + sizeof(long);
+const int MAX_DEPTH = ceil(log(INDEXES) / log(MI));
 
 // Pagina de indices
 struct IndexPage {
@@ -40,7 +41,7 @@ class Isam : public File_manager {
     bool add(Register data);
     bool remove(T key);
     // Recibe un array constante
-    void DEBUG_addIndexData(const int keys[consumer_id_data_size]);
+    void DEBUG_addIndexData();
 
    protected:
     // Iniciar archivos

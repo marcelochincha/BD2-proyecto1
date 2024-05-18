@@ -46,6 +46,6 @@ class AVLFile : public File_manager {
 
     void search(std::fstream &file, int pos, T key, std::vector<Register> &results);
     void rangeSearch(std::fstream &file, T begin_key, T end_key, int pos, std::vector<Register> &results);
-    bool remove(std::fstream &file, int &pos, T key);
+    bool remove(std::fstream &file, int pos, int parent_pos, T key);
     int min_value_node(std::fstream &file, int pos);
 };

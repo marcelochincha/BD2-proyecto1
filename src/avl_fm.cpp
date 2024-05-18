@@ -63,7 +63,7 @@ bool AVLFile::add(Register data) {
 
 bool AVLFile::remove(T key) {
     std::fstream file(this->filename, std::ios::in | std::ios::out | std::ios::binary);
-    bool result = remove(file, this->root, key);
+    bool result = remove(file, this->root, -1, key);
     file.close();
     return result;
 };
@@ -250,7 +250,7 @@ void AVLFile::rangeSearch(std::fstream &file, T begin_key, T end_key, int pos, s
 }
 
 // TODO
-bool AVLFile::remove(std::fstream &file, int &pos, T key) {
+bool AVLFile::remove(std::fstream &file, int pos, int parent_pos, T key) {
     if (pos == -1) {
         return false;  // Clave no encontrada.
     }
@@ -260,9 +260,9 @@ bool AVLFile::remove(std::fstream &file, int &pos, T key) {
     file.read((char *)&current, sizeof(Register_avl));
 
     if (key < current.reg.CustomerID) {
-        return remove(file, current.left, key);
+        return remove(file, current.left, pos, key);
     } else if (key > current.reg.CustomerID) {
-        return remove(file, current.right, key);
+        return remove(file, current.right, pos, key);
     } else {
         // Clave encontrada, manejar los casos de eliminación
         if (current.left == -1 || current.right == -1) {
@@ -286,17 +286,17 @@ bool AVLFile::remove(std::fstream &file, int &pos, T key) {
             int successorPos = min_value_node(file, current.right);
             Register_avl successor;
             file.seekg(sizeof(int) + successorPos * sizeof(Register_avl));
-            file.read((char)&successor, sizeof(Register_avl));
+            file.read((char *)&successor, sizeof(Register_avl));
 
             current.reg.CustomerID = successor.reg.CustomerID;  // Reemplaza con el sucesor
             file.seekp(sizeof(int) + pos * sizeof(Register_avl));
             file.write((char *)&current, sizeof(Register_avl));
 
             // Elimina el sucesor
-            remove(file, current.right, successor.reg.CustomerID);
+            remove(file, current.right, pos, successor.reg.CustomerID);
         }
-        updateHeight(file, pos);  // Actualiza la altura del nodo actual
-        balance(file, pos);       // Balancea el árbol
+        updateHeight(file, pos);         // Actualiza la altura del nodo actual
+        balance(file, pos, parent_pos);  // Balancea el árbol
         return true;
     }
 }

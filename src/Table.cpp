@@ -8,7 +8,7 @@
 Table::Table(Table::mode type, std::string file_name) {
     std::cout << "Creating table..." << std::endl;
     if (type == Table::mode::ext_hash) {
-        // this->file_m = new Ext_Hash(file_name);
+        this->file_m = new Ext_Hash(file_name);
     } else if (type == Table::mode::isam) {
         this->file_m = new Isam(file_name);
     } else if (type == Table::mode::avl_tree) {

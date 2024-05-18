@@ -3,12 +3,11 @@
 
 #include "file_manager.hpp"
 
-#define GD 16 // Depth global
-#define PAGE_SIZE_H 1024
+#define GD 16  // Depth global
+#define PAGE_SIZE_H 4096
 
 // MD_H  es el número de registros que caben en una página de datos .
-const int MD_H = (PAGE_SIZE_H - (3*sizeof(int)) - sizeof(long) -1) / (sizeof(Register));
-
+const int MD_H = (PAGE_SIZE_H - (3 * sizeof(int)) - sizeof(long)) / (sizeof(Register));
 
 struct Index_Page_H {
     int pointer;
@@ -48,10 +47,9 @@ class Ext_Hash : public File_manager {
 
     // Iniciar archivos
     void init_file();
-    
-    
+
     void set_pointer(std::fstream &file, int index, int value);
-    
+
     int get_size(std::fstream &file, int index);
     void set_size(std::fstream &file, int index, int value);
     int get_ld(std::fstream &file, int index);
@@ -75,10 +73,12 @@ class Ext_Hash : public File_manager {
     void re_linked_index(std::fstream &file, DataPage_H &bucket_1, DataPage_H &bucket_2, int pointer1, int pointer2);
 
     // RE LINK INDEX'S POINTER WHEN A BUCKET IS MERGED
-    void re_linked_index_merge(std::fstream &file, DataPage_H &bucket_1, int pointer1 );
+    void re_linked_index_merge(std::fstream &file, DataPage_H &bucket_1);
+
+    // get the pointer of the data page to be merged
+    int get_index_to_merge(DataPage_H &bucket);
 
    public:
-    
     Ext_Hash(std::string _filename);
     //
     // OPERACIONES
@@ -86,7 +86,5 @@ class Ext_Hash : public File_manager {
     bool add(Register reg);
     bool remove(T key);
     std::vector<Register> search(T key);
-    std::vector<Register> rangeSearch(T begin_key, T end_key);
-    
+    std::vector<Register> range_search(T begin_key, T end_key);
 };
-

@@ -13,14 +13,18 @@ int hash_function(int key, int depth) {
 
 // Constructor
 Ext_Hash::Ext_Hash(std::string _filename) : File_manager(_filename) {
-    if (!fileExists(this->dataName())) this->init_file();
-
-    init_file();
+    if (!fileExists(this->dataName())) {
+        // Add index
+        this->init_file();
+    } else
+        this->loaded = true;
 }
 
 // Iniciar archivos
 void Ext_Hash::init_file() {
     std::cout << "Init starting..." << std::endl;
+    // print value of GD and MD_H
+
     std::fstream file(dataName(), std::ios::binary | std::ios::app | std::ios::in | std::ios::out);
 
     file.seekg(0, std::ios::end);
@@ -38,12 +42,15 @@ void Ext_Hash::init_file() {
 
         // write header
         file.write((char *)&this->pos_free_list, sizeof(this->pos_free_list));
+        file.flush();
 
         // write initial buckets
         DataPage_H bucket(1, 0);
         file.write((char *)&bucket, sizeof(bucket));
+        file.flush();
         bucket = DataPage_H(1, 1);
         file.write((char *)&bucket, sizeof(bucket));
+        file.flush();
 
         file.close();
 
@@ -57,6 +64,7 @@ void Ext_Hash::init_file() {
                 idx.pointer = 1;
             }
             index.write((char *)&idx, sizeof(Index_Page_H));
+            index.flush();
         }
         index.close();
     }
@@ -76,61 +84,67 @@ bool Ext_Hash::add(Register reg) {
     int dir_pointer = hash_function(reg.CustomerID, this->global_depth);
     int pointer = get_pointer(index_file, dir_pointer);  // pointer to bucket
 
-    DataPage_H bucket = read_data_page(index_file, pointer);
+    DataPage_H bucket = read_data_page(data_file, pointer);
     if (bucket.size < MD_H) {
         bucket.registers[bucket.size] = reg;
         bucket.size++;
-
         write_data_page(data_file, bucket, pointer);
+    } else if (bucket.local_depth < this->global_depth) {
+        // split
+        // añadir un bit 0 en la posición local_depth
+        // añadir un bit 1 en la posición local_depth del nuevo bucket
+        // imprimir registros
+        DataPage_H new_bucket(bucket.local_depth, bucket.bits);
 
-    } 
-    else {
-        if (bucket.local_depth < this->global_depth) {
-            // split
-            // añadir un bit 0 en la posición local_depth
-            // añadir un bit 1 en la posición local_depth del nuevo bucket
-            DataPage_H new_bucket(bucket.local_depth, bucket.bits);
+        add_bit(bucket, 0);
+        add_bit(new_bucket, 1);
 
-            add_bit(bucket, 0);
-            add_bit(new_bucket, 1);
+        // write new buckets in temp heap
 
-            // write new buckets
-            Register temp[bucket.size + 1];
-            for (int i = 0; i < bucket.size; i++) {
-                temp[i] = bucket.registers[i];
-            }
-            temp[bucket.size] = reg;
-
-            bucket.size = 0;
-            new_bucket.size = 0;
-
-            // write new bucket to file
-            write_data_page(data_file, bucket, pointer);
-            int pointer_new_page = write_new_page(data_file, new_bucket);
-
-            // Re linked index pages to bucket and new bucket
-            re_linked_index(index_file, bucket, new_bucket, pointer, pointer_new_page);
-
-            // rehash all elements of temp
-            for (int i = 0; i < bucket.size + 1; i++) {
-                add(temp[i]);
-            }
-
-        } else {  // overflow
-            // create new bucket
-            DataPage_H new_bucket(bucket.local_depth, bucket.bits);
-            new_bucket.size = 0;
-            new_bucket.registers[new_bucket.size] = reg;
-            new_bucket.size++;
-
-            // write new bucket to file
-            int pointer_new_page = write_new_page(data_file, new_bucket);
-
-            // set pointer to new bucket
-            bucket.next = pointer_new_page;
-            write_data_page(data_file, bucket, pointer);
+        Register *temp = new Register[bucket.size + 1];
+        for (int i = 0; i < bucket.size; i++) {
+            temp[i] = bucket.registers[i];
         }
+        temp[bucket.size] = reg;
+        int length_temp = bucket.size + 1;
+
+        bucket.size = 0;
+        new_bucket.size = 0;
+
+        bucket.next = -1;
+        new_bucket.next = -1;
+
+        // write new bucket to file
+        write_data_page(data_file, bucket, pointer);
+        int pointer_new_page = write_new_page(data_file, new_bucket);
+
+        // Re linked index pages to bucket and new bucket
+        re_linked_index(index_file, bucket, new_bucket, pointer, pointer_new_page);
+        // rehash all elements of temp
+        // print size  of temp
+
+        for (int i = 0; i < length_temp; i++) {
+            // insert all elements in the new bucket
+            add(temp[i]);
+        }
+
+        delete[] temp;
+
+    } else {  // overflow
+        // create new bucket
+        DataPage_H new_bucket(bucket.local_depth, bucket.bits);
+        new_bucket.size = 0;
+        new_bucket.registers[new_bucket.size] = reg;
+        new_bucket.size++;
+
+        // write new bucket to file
+        int pointer_new_page = write_new_page(data_file, new_bucket);
+
+        // set pointer to new bucket
+        bucket.next = pointer_new_page;
+        write_data_page(data_file, bucket, pointer);
     }
+
     index_file.close();
     data_file.close();
     return true;
@@ -145,43 +159,40 @@ bool Ext_Hash::remove(T key) {
     int dir_pointer = hash_function(key, this->global_depth);
     int pointer = get_pointer(index_file, dir_pointer);
 
-    // Declare bucket temp 
+    // Declare bucket temp
     DataPage_H bucket_prev;
 
     int pointer_prev = -1;
     int count_overflow = 0;
+    bool found = false;
 
     do {
         DataPage_H bucket = read_data_page(data_file, pointer);
         for (int i = 0; i < bucket.size; i++) {
-            if (bucket.registers[i].CustomerID == key){
+            if (bucket.registers[i].CustomerID == key) {
+                found = true;
                 // delete register
-                if (bucket.size > 1){ // if there are more than one register
+                if (bucket.size > 1) {  // if there are more than one register
                     bucket.registers[i] = bucket.registers[bucket.size - 1];
                     bucket.size--;
                     write_data_page(data_file, bucket, pointer);
-                }
-            } 
-            else { // if there is only one register
-                
-                if ( count_overflow == 0 && bucket.next < 0) {  // no overflow
+                } else if (count_overflow == 0 && bucket.next < 0)  // if there is only one register
+                {                                                   // no overflow
                     // set next to -1
                     bucket.size = 0;
-                    
-                    // linked to free list 
+
+                    // linked to free list
                     bucket.free_list = this->pos_free_list;
                     this->pos_free_list = pointer;
                     write_data_page(data_file, bucket, pointer);
 
                     // Mergear and restore index_file to local_depth-1 bits (least significant)
-                    re_linked_index_merge(index_file, bucket, pointer);
-
-                } 
-                else { // overflow  
-                    if (count_overflow == 0){
+                    re_linked_index_merge(index_file, bucket);
+                } else {  // overflow
+                    if (count_overflow == 0) {
                         // leer el siguiente bucket, eliminar el siguiente y ponerlo en free list
                         DataPage_H next_bucket = read_data_page(data_file, bucket.next);
-                        
+
                         // overwrite this bucket
                         write_data_page(data_file, next_bucket, pointer);
 
@@ -191,8 +202,7 @@ bool Ext_Hash::remove(T key) {
                         bucket.size = 0;
                         bucket.next = -1;
                         write_data_page(data_file, bucket, pointer);
-                    }
-                    else{
+                    } else {
                         bucket_prev.next = bucket.next;
 
                         bucket.size = 0;
@@ -201,7 +211,6 @@ bool Ext_Hash::remove(T key) {
                         write_data_page(data_file, bucket, pointer);
                         write_data_page(data_file, bucket_prev, pointer_prev);
                     }
-            
                 }
             }
         }
@@ -215,20 +224,7 @@ bool Ext_Hash::remove(T key) {
 
     index_file.close();
     data_file.close();
-    return true;
-
-
-    /*
-    1. hay mas de 1 registro en el bucket-> simple
-    2. hay 1 registro en el bucket -> overflow:
-        eliminar y poner en free list.
-        desenlazar el bucket vacio:
-            si es el primero -> cambiar el puntero en index_file
-            si no -> cambiar el puntero en el bucket anterior
-    3 hay 1 registro en el bucket -> no overflow:
-        eliminar y poner en free list.
-        mergear con buckets y     
-    */
+    return found;
 }
 
 std::vector<Register> Ext_Hash::search(T key) {
@@ -242,22 +238,25 @@ std::vector<Register> Ext_Hash::search(T key) {
     index_file.close();
 
     std::vector<Register> result;
-    do{
+    do {
         DataPage_H bucket = read_data_page(data_file, pointer);
         for (int i = 0; i < bucket.size; i++) {
-            if (bucket.registers[i].CustomerID == key) result.push_back(bucket.registers[i]);
+            if (bucket.registers[i].CustomerID == key) {
+                result.push_back(bucket.registers[i]);
+            }
         }
         if (bucket.next < 0) break;
 
         pointer = bucket.next;
 
-    }while(true);
+    } while (true);
 
     return result;
 }
 
-std::vector<Register> Ext_Hash::rangeSearch(T begin_key, T end_key) {
-    throw std::runtime_error("Extendible Hashing does not support range search");
+std::vector<Register> Ext_Hash::range_search(T begin_key, T end_key) {
+    std::cout << "Extendible Hashing does not support range search" << std::endl;
+    return std::vector<Register>();
 }
 
 //
@@ -292,36 +291,38 @@ int Ext_Hash::get_pointer(std::fstream &file, int index) {
 }
 
 // READ AND WRITE DATA PAGE IN FILE DATA
-DataPage_H Ext_Hash::read_data_page(std::fstream &file, int index){
-    file.seekg(index * sizeof(DataPage_H)+sizeof(int), std::ios::beg);
+DataPage_H Ext_Hash::read_data_page(std::fstream &file, int index) {
+    file.seekg(index * sizeof(DataPage_H) + sizeof(int), std::ios::beg);
     DataPage_H bucket;
     file.read((char *)&bucket, sizeof(DataPage_H));
     return bucket;
 }
 // To overwrite bucket in file data
 void Ext_Hash::write_data_page(std::fstream &file, DataPage_H bucket, int index) {
-    file.seekp(index * sizeof(DataPage_H) +sizeof(int), std::ios::beg);
+    file.seekp(index * sizeof(DataPage_H) + sizeof(int), std::ios::beg);
     file.write((char *)&bucket, sizeof(DataPage_H));
+    file.flush();
 }
 
 // To write new bucket in file data
-int Ext_Hash::write_new_page(std::fstream &file, DataPage_H &bucket){
+int Ext_Hash::write_new_page(std::fstream &file, DataPage_H &bucket) {
     // Siguiendo la logica de free list
     if (this->pos_free_list == -1) {
         file.seekp(0, std::ios::end);
         file.write((char *)&bucket, sizeof(DataPage_H));
+        file.flush();
 
         // return pointer to new bucket
         // return ((file.tellp()-sizeof(int)) / sizeof(DataPage_H))-1;
         std::streampos pos = file.tellp();
         std::streamoff offset = pos - std::streamoff(sizeof(int));
         return (offset / std::streamoff(sizeof(DataPage_H))) - 1;
-    } 
-    else {
+    } else {
         // go to pos_free_list
         DataPage_H temp = read_data_page(file, this->pos_free_list);
         file.seekp(this->pos_free_list * sizeof(DataPage_H) + sizeof(int), std::ios::beg);
         file.write((char *)&bucket, sizeof(DataPage_H));
+        file.flush();
         this->pos_free_list = temp.free_list;
 
         // return ((file.tellp() - sizeof(int)) / sizeof(DataPage_H)) - 1;
@@ -332,7 +333,8 @@ int Ext_Hash::write_new_page(std::fstream &file, DataPage_H &bucket){
     }
 }
 
-void Ext_Hash::re_linked_index(std::fstream &file, DataPage_H &bucket_1, DataPage_H &bucket_2, int pointer1, int pointer2) {
+void Ext_Hash::re_linked_index(std::fstream &file, DataPage_H &bucket_1, DataPage_H &bucket_2, int pointer1,
+                               int pointer2) {
     // matchear bit1 y bit2
 
     // help_to match
@@ -343,16 +345,15 @@ void Ext_Hash::re_linked_index(std::fstream &file, DataPage_H &bucket_1, DataPag
     std::string bits_bucket = bucket_1.bits.to_string().substr(sub_j, bucket_1.local_depth);
     // 1 in split
     std::string bits_new_bucket = bucket_2.bits.to_string().substr(sub_j, bucket_2.local_depth);
-    
+
     for (int i = 0; i < limit; i++) {
         // convertir i a un string de GD - local_depth bits
         std::bitset<GD> i_bit(i);
         std::string i_str = i_bit.to_string().substr(i_bit.size() - sub_j, sub_j);
-        
+
         // concatenar i_str con [ bits_bucket| bits_new_bucket]
         std::string i_str_1 = i_str + bits_bucket;
         std::string i_str_2 = i_str + bits_new_bucket;
-
 
         // covertir i_str_(1,2) a al entero de decimal de su valor binario
         std::bitset<GD> i_str_bit_1(i_str_1);
@@ -366,26 +367,35 @@ void Ext_Hash::re_linked_index(std::fstream &file, DataPage_H &bucket_1, DataPag
         Index_Page_H idx;
         idx.pointer = pointer1;
         file.write((char *)&idx, sizeof(Index_Page_H));
+        file.flush();
 
         // escribir en index_file el nuevo pointer2
         file.seekp(index_2 * sizeof(Index_Page_H), std::ios::beg);
         idx.pointer = pointer2;
         file.write((char *)&idx, sizeof(Index_Page_H));
-        
+        file.flush();
     }
 }
 
 // RE LINK INDEX'S POINTER WHEN A BUCKET IS MERGED
-void Ext_Hash::re_linked_index_merge(std::fstream &file, DataPage_H &bucket_1, int pointer1){
+void Ext_Hash::re_linked_index_merge(std::fstream &file, DataPage_H &bucket_1) {
     // matchear bit1 y bit2
+
+    // obtain the pointer of the bucket to be merged
+    Index_Page_H idx1;
+    int index_to_merge = get_index_to_merge(bucket_1);
+    file.seekg(index_to_merge * sizeof(DataPage_H), std::ios::beg);
+    file.read((char *)&idx1, sizeof(Index_Page_H));
+    int pointer_be_persist = idx1.pointer;
 
     // help_to match
     int sub_j = this->global_depth - bucket_1.local_depth + 1;
     int limit = pow(2, sub_j);
 
     // merge (delete bit in local_depth) 011 and 111 -> 11
-    std::string bits_bucket = bucket_1.bits.to_string().substr(sub_j, bucket_1.local_depth-1);
-    
+    std::string bits_bucket = bucket_1.bits.to_string().substr(sub_j, bucket_1.local_depth - 1);
+
+    Index_Page_H idx;
     for (int i = 0; i < limit; i++) {
         // convertir i a un string de GD - local_depth bits
         std::bitset<GD> i_bit(i);
@@ -400,8 +410,34 @@ void Ext_Hash::re_linked_index_merge(std::fstream &file, DataPage_H &bucket_1, i
 
         // escribir en index_file el nuevo pointer1
         file.seekp(index_1 * sizeof(Index_Page_H), std::ios::beg);
-        Index_Page_H idx;
-        idx.pointer = pointer1;
+        idx.pointer = pointer_be_persist;
         file.write((char *)&idx, sizeof(Index_Page_H));
+        file.flush();
     }
+}
+
+// get the pointer of the data page to be merged
+int Ext_Hash::get_index_to_merge(DataPage_H &bucket) {
+    // matchear bit1 y bit2
+
+    // help_to match
+    int sub_j = this->global_depth - bucket.local_depth;
+    int limit = pow(2, sub_j);
+
+    // Extract the bits of the bucket
+    std::string bits_bucket = bucket.bits.to_string().substr(sub_j, bucket.local_depth);
+
+    // verify if the most significant bit is 0 or 1
+    if (bits_bucket[0] == '0') {
+        bits_bucket[0] = '1';
+
+    } else {
+        bits_bucket[0] = '0';
+    }
+
+    // convertir string to bitset
+    std::bitset<GD> bits_bucket_bit(bits_bucket);
+    int index = bits_bucket_bit.to_ulong();
+
+    return index;
 }

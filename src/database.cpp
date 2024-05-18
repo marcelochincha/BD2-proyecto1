@@ -157,6 +157,9 @@ std::string Database::create_table(std::queue<std::string> tokens) {
     } else if (table_type == "AVL") {
         type = Table::mode::avl_tree;
         tNEW = new Table(type, table_name);
+    } else if (table_type == "HASH") {
+        type = Table::mode::ext_hash;
+        tNEW = new Table(type, table_name);
     } else {
         return "Invalid table type";
     }

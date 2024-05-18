@@ -13,8 +13,8 @@ file(GLOB_RECURSE UI_FILES ui/*.cpp)
 
 # Lista de archivos a ignorar (rutas completas)
 set(IGNORE_FILES
-    ${CMAKE_SOURCE_DIR}/src/Ext_Hash.cpp
-    ${CMAKE_SOURCE_DIR}/src/Ext_Hash.hpp
+    # ${CMAKE_SOURCE_DIR}/src/Ext_Hash.cpp
+    # ${CMAKE_SOURCE_DIR}/src/Ext_Hash.hpp
     ${CMAKE_SOURCE_DIR}/src/main.cpp
 )
 

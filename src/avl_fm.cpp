@@ -74,6 +74,7 @@ bool AVLFile::remove(T key) {
 // ----------------------------------------------------
 
 void AVLFile::updateHeader(std::fstream &file, int new_root) {
+    this->root = new_root;
     file.seekp(0, std::ios::beg);
     file.write((char *)&new_root, sizeof(int));
 };
@@ -242,6 +243,8 @@ void AVLFile::search(std::fstream &file, int pos, T key, std::vector<Register> &
 }
 
 void AVLFile::rangeSearch(std::fstream &file, T begin_key, T end_key, int pos, std::vector<Register> &results) {
+    if (pos == -1) return;
+    std::cout << "iterating range" << std::endl;
     Register_avl node;
     file.seekg((pos * sizeof(Register_avl)) + sizeof(int), std::ios::beg);
     file.read((char *)&node, sizeof(Register_avl));
@@ -258,7 +261,7 @@ void AVLFile::rangeSearch(std::fstream &file, T begin_key, T end_key, int pos, s
 
 bool AVLFile::remove(std::fstream &file, int pos, int parent_pos, T key) {
     if (pos == -1) {
-        return false;  // Clave no encontrada.
+        return false;
     }
 
     Register_avl current;

@@ -15,6 +15,7 @@ class Database {
     ~Database();
 
     std::string execute(std::string query);
+    std::vector<Register> last_results;
 
    private:
     std::unordered_map<std::string, Table*> tables;

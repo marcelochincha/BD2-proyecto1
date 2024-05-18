@@ -3,14 +3,15 @@
 #include <string>
 #include <vector>
 
-#include "file_manager.hpp"
 #include "Isam.hpp"
+#include "file_manager.hpp"
 
-// Tabla de base de datos 
+// Tabla de base de datos
 class Table {
    private:
     File_manager* file_m;
     std::string table_name;
+
    public:
     enum mode { avl_tree = 0, isam, ext_hash, NULL_MODE };
 

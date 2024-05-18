@@ -9,8 +9,8 @@
 #include "file_manager.hpp"
 
 #define MAX_DEPTH 3
-#define PAGE_SIZE_INDEX 256  //
-#define PAGE_SIZE_DATA 4096  // 4KB
+#define PAGE_SIZE_INDEX 1536  //
+#define PAGE_SIZE_DATA 4096   // 4KB
 
 // MD y MI son el número de registros que caben en una página de datos e índice.
 const int MI = (PAGE_SIZE_INDEX - sizeof(int) - sizeof(long)) / ((sizeof(int) + sizeof(long)));
@@ -65,6 +65,8 @@ class Isam : public File_manager {
     bool addToPage(const Register &record, long pagePos, std::fstream &f);
     bool searchInPage(const T key, long pagePos, std::vector<Register> &buffer, std::fstream &f);
     bool removeInPage(const T key, long pagePos, std::fstream &f);
-    bool recursiveRangeSearch(const T begin_key,const T end_key, int depth, long posPage, std::vector<Register> &buffer, std::fstream &f);
-    bool rangeSearchInPage(const T begin_key, const T end_key, long pagePos, std::vector<Register> &buffer, std::fstream &f);
+    bool recursiveRangeSearch(const T begin_key, const T end_key, int depth, long posPage,
+                              std::vector<Register> &buffer, std::fstream &f);
+    bool rangeSearchInPage(const T begin_key, const T end_key, long pagePos, std::vector<Register> &buffer,
+                           std::fstream &f);
 };

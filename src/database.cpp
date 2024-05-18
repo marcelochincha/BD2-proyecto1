@@ -85,7 +85,7 @@ bool getRegister(Register& r, std::string data) {
 }
 
 std::string Database::execute(std::string query) {
-    //std::cout << "Executing: " << query << "\n";
+    // std::cout << "Executing: " << query << "\n";
 
     if (query == "") {
         return "Empty command";
@@ -138,6 +138,7 @@ std::string Database::create_table(std::queue<std::string> tokens) {
 
     // Obtener path del archivo
     std::string file_path = tokens.front();
+    std::cout << "Reading file: " << file_path << std::endl;
 
     tokens.pop();
     tokens.pop();  // Remove USING
@@ -240,6 +241,9 @@ std::string Database::select(std::queue<std::string> tokens) {
         result = table->search(std::stoi(value));
     } else
         return "Invalid comparison type :" + compType;
+
+    // copy results to last_results
+    last_results = result;
 
     // Print columns
     for (auto word : columns) {

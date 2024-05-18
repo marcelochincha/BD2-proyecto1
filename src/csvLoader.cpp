@@ -13,6 +13,8 @@ void readCSV(const std::string& filename, Table* tab) {
         return;
     }
 
+    std::cout << filename << std::endl;
+    // std::string filepath = "./" + filename;
     std::ifstream file(filename);
     std::string line;
 

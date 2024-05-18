@@ -265,23 +265,57 @@ bool Isam::searchInPage(const T key, long pagePos, std::vector<Register> &buffer
     return buffer.size() > 0;
 }
 
+// bool Isam::removeInPage(const T key, long pagePos, std::fstream &f) {
+//     DataPage data = this->loadPage<DataPage>(pagePos, f);
+//     bool founded = false;
+//     bool checkNext = false;
+//     for (int i = 0; i < data.n; i++) {
+//         if (keyCmp(key, data.records[i].CustomerID) == 0) {
+//             founded = true;
+//             // Eliminar el registro (remplazar con el ultimo registro)
+//             data.records[i] = data.records[data.n - 1];
+//             data.n--;
+//             f.seekp(pagePos, std::ios::beg);
+//             f.write((char *)&data, sizeof(DataPage));
+//         } else if (founded) {
+//             checkNext = true;
+//             break;
+//         }
+//     }
+//     if (checkNext) this->removeInPage(key, data.nextPage, f);
+//     return founded;
+// }
+
 bool Isam::removeInPage(const T key, long pagePos, std::fstream &f) {
+    if (pagePos == -1) return false;
+
+    bool found = false;
+    int r = 0;
     DataPage data = this->loadPage<DataPage>(pagePos, f);
-    bool founded = false;
-    bool checkNext = false;
     for (int i = 0; i < data.n; i++) {
         if (keyCmp(key, data.records[i].CustomerID) == 0) {
-            founded = true;
             // Eliminar el registro (remplazar con el ultimo registro)
-            data.records[i] = data.records[data.n - 1];
-            data.n--;
-            f.seekp(pagePos, std::ios::beg);
-            f.write((char *)&data, sizeof(DataPage));
-        } else if (founded) {
-            checkNext = true;
+            found = true;
+            r = i;
             break;
         }
     }
-    if (checkNext) this->removeInPage(key, data.nextPage, f);
-    return founded;
+
+    // Checkear que no este en otras paginas
+    if (!found) return this->removeInPage(key, data.nextPage, f);
+
+    std::cout << "REMOVING THE DATA: " << r << std::endl;
+    // Remove the register
+    if (r < data.n - 1) {
+        data.records[r] = data.records[data.n - 1];
+        data.n--;
+    }
+    // Si es el ultimo registro
+    else {
+        data.n--;
+    }
+    f.seekp(pagePos, std::ios::beg);
+    f.write((char *)&data, sizeof(DataPage));
+
+    return true;
 }

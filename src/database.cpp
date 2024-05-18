@@ -85,7 +85,7 @@ bool getRegister(Register& r, std::string data) {
 }
 
 std::string Database::execute(std::string query) {
-    std::cout << "Executing: " << query << "\n";
+    //std::cout << "Executing: " << query << "\n";
 
     if (query == "") {
         return "Empty command";
@@ -156,6 +156,8 @@ std::string Database::create_table(std::queue<std::string> tokens) {
     } else {
         return "Invalid table type";
     }
+
+    std::cout << "Loading data..." << std::endl;
     // Cargar datos
     readCSV(file_path, tNEW);
 
@@ -202,40 +204,48 @@ std::string Database::select(std::queue<std::string> tokens) {
     tokens.pop();  // Remove *
     tokens.pop();  // Remove FROM
     std::string table_name = tokens.front();
-    tokens.pop();
+    if (tables.find(table_name) == tables.end()) {
+        return "Table not found";
+    }
+    Table* table = tables[table_name];
+
+    tokens.pop();  // Remove table_name
     tokens.pop();  // Remove WHERE
     std::string field = tokens.front();
     if (field != "CustomerID") {
         return "Invalid field to search (must be CustomerID)";
     }
-    tokens.pop();
+    tokens.pop();  // Remove CustomerID
 
     std::string compType = tokens.front();
     tokens.pop();
 
     std::string res = "";
-    Table* table = tables[table_name];
     std::vector<Register> result;
     if (compType == "BETWEEN") {
-        tokens.pop();  // Remove BETWEEN
         std::string value1 = tokens.front();
         tokens.pop();
+
         tokens.pop();  // Remove AND
+
         std::string value2 = tokens.front();
         tokens.pop();
-        if (tables.find(table_name) == tables.end()) {
-            return "Table not found";
-        }
+
+        std::cout << "Searching between " << value1 << " and " << value2 << std::endl;
+
         result = table->range_search(std::stoi(value1), std::stoi(value2));
     } else if (compType == "=") {
         std::string value = tokens.front();
         tokens.pop();
-        if (tables.find(table_name) == tables.end()) {
-            return "Table not found";
-        }
         result = table->search(std::stoi(value));
     } else
         return "Invalid comparison type :" + compType;
+
+    // Print columns
+    for (auto word : columns) {
+        res += word + " | ";
+    }
+    res += "\n";
 
     for (size_t i = 0; i < result.size(); i++) {
         res += register_to_string(result[i]) + "\n";

@@ -35,7 +35,11 @@ std::vector<Register> Isam::search(T key) {
 };
 
 std::vector<Register> Isam::range_search(T begin_key, T end_key) {
-    return std::vector<Register>();
+    std::cout << "Range search" << std::endl;
+    std::vector<Register> buffer;
+    std::fstream f;
+    this->recursiveRangeSearch(begin_key, end_key, 0, 0, buffer, f);
+    return buffer;
 };
 
 bool Isam::add(Register data) {
@@ -84,12 +88,13 @@ void Isam::DEBUG_addIndexData(const int keys[consumer_id_data_size]) {
     for (int depth = 0; depth < MAX_DEPTH; depth++) {
         std::fstream indxFile;
         indxFile.open(this->idxName(depth), std::ios::binary | std::ios::in | std::ios::out);
+        
         indxFile.seekp(0, std::ios::beg);
 
         int p_size = pow(MI, depth);
         int step_size = n / p_size;
-        // std::cout << "Depth: " << depth  << "p_size:" << p_size << std::endl;
-
+        
+        long pos = 0;
         for (size_t i = 0; i < p_size; i++) {
             int left = i * step_size;
             int right = (i + 1) * step_size;
@@ -100,14 +105,16 @@ void Isam::DEBUG_addIndexData(const int keys[consumer_id_data_size]) {
             // Crear index page
             IndexPage indexBuffer{0};
             // Rellenar
-
+            indexBuffer.pages[0] = pos * sizeof(IndexPage);
+            pos++;
             for (size_t j = 0; j < MI; j += 1) {
                 if (j > MI) throw std::runtime_error("Index out of bounds");
 
                 int next = left + j * inner_step;
                 if (next >= n || next > consumer_id_data_size) break;
                 indexBuffer.keys[j] = keys[next];
-                indexBuffer.pages[j] = left + j * inner_step;
+                indexBuffer.pages[j + 1] = pos * sizeof(IndexPage);
+                pos++;
                 indexBuffer.n++;
 
                 // Crear data page
@@ -244,6 +251,41 @@ bool Isam::searchInPage(const T key, long pagePos, std::vector<Register> &buffer
         }
     }
     if (checkNext) this->searchInPage(key, data.nextPage, buffer, f);
+    return founded;
+}
+
+bool Isam::recursiveRangeSearch(const T begin_key, const T end_key, int depth, long posPage, std::vector<Register> &buffer, std::fstream &f){ 
+    // Buscar la pagina en los indexpages
+    if (depth < MAX_DEPTH) {
+        f.open(idxName(depth), std::ios::binary | std::ios::in);
+        IndexPage currentIndexPage = this->loadPage<IndexPage>(posPage, f);
+        f.close();
+        for (int i = 0; i < currentIndexPage.n; i++) {
+            if (keyCmp(begin_key, currentIndexPage.keys[i]) <= 0 && keyCmp(end_key, currentIndexPage.keys[i]) >= 0) {
+                recursiveRangeSearch(begin_key, end_key, depth + 1, currentIndexPage.pages[i], buffer, f);
+            }
+        }
+        depth++;
+    }
+
+    return false;
+}
+
+bool Isam::rangeSearchInPage(const T begin_key, const T end_key, long pagePos, std::vector<Register> &buffer,
+                             std::fstream &f) {
+    DataPage data = this->loadPage<DataPage>(pagePos, f);
+    bool founded = false;
+    bool checkNext = false;
+    for (int i = 0; i < data.n; i++) {
+        if (keyCmp(begin_key, data.records[i].CustomerID) <= 0 && keyCmp(end_key, data.records[i].CustomerID) >= 0) {
+            buffer.push_back(data.records[i]);
+            founded = true;
+        } else if (founded) {
+            checkNext = true;
+            break;
+        }
+    }
+    if (checkNext) this->rangeSearchInPage(begin_key, end_key, data.nextPage, buffer, f);
     return founded;
 }
 

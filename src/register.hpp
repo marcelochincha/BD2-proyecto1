@@ -14,10 +14,10 @@ struct Register {
     char ProductID;
     int Quantity;
     float Price;
-    char TransactionDate[16];
-    char PaymentMethod[11];
+    char TransactionDate[20];
+    char PaymentMethod[12];
     char StoreLocation[68];
-    char ProductCategory[11];
+    char ProductCategory[12];
     float DiscountApplied;
     float TotalAmount;
 };

@@ -16,7 +16,7 @@ std::ostream& operator<<(std::ostream& os, const Register& r) {
 
 std::string register_to_string(const Register& r) {
     std::string s = std::to_string(r.CustomerID) + " ";
-    s += std::string(r.ProductID,1) + " ";
+    s += std::string(1,r.ProductID)  + " ";
     s += std::to_string(r.Quantity) + " ";
     s += std::to_string(r.Price) + " ";
     s += std::string(r.TransactionDate) + " ";

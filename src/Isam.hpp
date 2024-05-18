@@ -62,4 +62,6 @@ class Isam : public File_manager {
     bool addToPage(const Register &record, long pagePos, std::fstream &f);
     bool searchInPage(const T key, long pagePos, std::vector<Register> &buffer, std::fstream &f);
     bool removeInPage(const T key, long pagePos, std::fstream &f);
+    bool recursiveRangeSearch(const T begin_key,const T end_key, int depth, long posPage, std::vector<Register> &buffer, std::fstream &f);
+    bool rangeSearchInPage(const T begin_key, const T end_key, long pagePos, std::vector<Register> &buffer, std::fstream &f);
 };

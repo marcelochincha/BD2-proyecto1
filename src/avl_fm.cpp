@@ -13,7 +13,7 @@ private:
 public:
     AVLFile(std::string filename);
     void insert(Register_avl &record);
-    Register find(T value);
+    Register_avl find(T value);
     int height();
     void displayInOrder();
     ~AVLFile() {}
@@ -28,7 +28,7 @@ public:
     void display();
 
 private:
-    Register find(int pos, T value, std::fstream &file);
+    Register_avl find(int pos, T value, std::fstream &file);
     void displayInOrder(std::fstream &file, int &pos);
     int height(Register_avl &node);
     void insert(std::fstream &file, T &value, int &new_pos, int actual_pos, int parent_pos);
@@ -135,9 +135,14 @@ void AVLFile:: insert(std::fstream &file, T &value, int &new_pos, int actual_pos
     updateHeight(file, actual_pos);
     balance(file, actual_pos, parent_pos);
 }
-
-
-Register AVLFile::find(T value) {
+Register_avl AVLFile::find(T value) {
+    std::fstream file(this->filename, std::ios::binary | std::ios::in | std::ios::out);
+    Register_avl record = find(this->root, value, file);
+    file.close();
+    return record;
+};
+Register_avl::AVLFile find(int pos, T value, std::fstream &file){
+    
 };
 
 int AVLFile::height() {

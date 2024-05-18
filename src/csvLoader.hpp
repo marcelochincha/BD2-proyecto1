@@ -3,6 +3,6 @@
 #include <vector>
 
 #include "register.hpp"
-#include "table.hpp"
+#include "Table.hpp"
 
 void readCSV(const std::string& filename, Table* tab);

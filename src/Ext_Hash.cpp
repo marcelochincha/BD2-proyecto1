@@ -312,15 +312,23 @@ int Ext_Hash::write_new_page(std::fstream &file, DataPage_H &bucket){
         file.write((char *)&bucket, sizeof(DataPage_H));
 
         // return pointer to new bucket
-        return ((file.tellp()-sizeof(int)) / sizeof(DataPage_H))-1;
-    } else {
+        // return ((file.tellp()-sizeof(int)) / sizeof(DataPage_H))-1;
+        std::streampos pos = file.tellp();
+        std::streamoff offset = pos - std::streamoff(sizeof(int));
+        return (offset / std::streamoff(sizeof(DataPage_H))) - 1;
+    } 
+    else {
         // go to pos_free_list
         DataPage_H temp = read_data_page(file, this->pos_free_list);
         file.seekp(this->pos_free_list * sizeof(DataPage_H) + sizeof(int), std::ios::beg);
         file.write((char *)&bucket, sizeof(DataPage_H));
         this->pos_free_list = temp.free_list;
 
-        return ((file.tellp() - sizeof(int)) / sizeof(DataPage_H)) - 1;
+        // return ((file.tellp() - sizeof(int)) / sizeof(DataPage_H)) - 1;
+        // Calcular la posición de la nueva página
+        std::streampos pos = file.tellp();
+        std::streamoff offset = pos - std::streamoff(sizeof(int));
+        return (offset / std::streamoff(sizeof(DataPage_H))) - 1;
     }
 }
 

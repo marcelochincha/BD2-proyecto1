@@ -96,6 +96,11 @@ Calcular el hash de la clave.
 Seguir el puntero del directorio al bucket correspondiente.
 Buscar en el bucket el registro deseado.
 
+![image](https://github.com/marcelochincha/BD2-proyecto1/assets/130480550/f3bff377-fcfe-4975-9160-5ca733613d25)
+
+
+Diagrama ilustrativo de la estructura de Extendible Hashing, que muestra cómo funciona el directorio, los buckets, y la división y expansión de estos al llenarse
+
 ## Análisis Comparativo Teórico
 
 - Comparación teórica de las técnicas implementadas basándose en accesos a memoria secundaria para inserción, búsqueda y eliminación.

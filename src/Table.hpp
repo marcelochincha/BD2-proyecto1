@@ -3,7 +3,9 @@
 #include <string>
 #include <vector>
 
+#include "Ext_Hash.hpp"
 #include "Isam.hpp"
+#include "avl_fm.hpp"
 #include "file_manager.hpp"
 
 // Tabla de base de datos
@@ -13,7 +15,7 @@ class Table {
     std::string table_name;
 
    public:
-    enum mode { avl_tree = 0, isam, ext_hash, NULL_MODE };
+    enum mode { avl_tree, isam, ext_hash, NULL_MODE };
 
     Table(mode type, std::string table_name);
     ~Table();

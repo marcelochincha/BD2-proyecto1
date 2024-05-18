@@ -18,6 +18,7 @@ class AVLFile : public File_manager {
 
     // Implementación de las funciones virtuales de File_manager
     // dejarlo como register
+    void init_file() override;
     std::vector<Register> search(T key) override;
     std::vector<Register> range_search(T begin_key, T end_key) override;
     bool add(Register data) override;
@@ -48,4 +49,7 @@ class AVLFile : public File_manager {
     void rangeSearch(std::fstream &file, T begin_key, T end_key, int pos, std::vector<Register> &results);
     bool remove(std::fstream &file, int pos, int parent_pos, T key);
     int min_value_node(std::fstream &file, int pos);
+    // añado
+    void updateParentLink(std::fstream &file, int parent_pos, int old_child_pos, int new_child_pos);
+    void replaceNode(std::fstream &file, int node_pos, int child_pos);
 };

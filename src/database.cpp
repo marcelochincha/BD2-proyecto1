@@ -154,6 +154,9 @@ std::string Database::create_table(std::queue<std::string> tokens) {
     if (table_type == "ISAM") {
         type = Table::mode::isam;
         tNEW = new Table(type, table_name);
+    } else if (table_type == "AVL") {
+        type = Table::mode::avl_tree;
+        tNEW = new Table(type, table_name);
     } else {
         return "Invalid table type";
     }
@@ -222,7 +225,6 @@ std::string Database::select(std::queue<std::string> tokens) {
     tokens.pop();
 
     std::string res = "";
-    std::vector<Register> result;
     if (compType == "BETWEEN") {
         std::string value1 = tokens.front();
         tokens.pop();
@@ -234,16 +236,13 @@ std::string Database::select(std::queue<std::string> tokens) {
 
         std::cout << "Searching between " << value1 << " and " << value2 << std::endl;
 
-        result = table->range_search(std::stoi(value1), std::stoi(value2));
+        last_results = table->range_search(std::stoi(value1), std::stoi(value2));
     } else if (compType == "=") {
         std::string value = tokens.front();
         tokens.pop();
-        result = table->search(std::stoi(value));
+        last_results = table->search(std::stoi(value));
     } else
         return "Invalid comparison type :" + compType;
-
-    // copy results to last_results
-    last_results = result;
 
     // Print columns
     for (auto word : columns) {
@@ -251,8 +250,8 @@ std::string Database::select(std::queue<std::string> tokens) {
     }
     res += "\n";
 
-    for (size_t i = 0; i < result.size(); i++) {
-        res += register_to_string(result[i]) + "\n";
+    for (size_t i = 0; i < last_results.size(); i++) {
+        res += register_to_string(last_results[i]) + "\n";
     }
     return res;
 }

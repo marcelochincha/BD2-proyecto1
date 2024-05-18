@@ -1,9 +1,22 @@
 #include "Table.hpp"
 
+// Table::Table(Table::mode type, std::string file_name) {
+//     std::cout << "Creating table..." << std::endl;
+//     this->file_m = new Isam(file_name);
+// }
 
 Table::Table(Table::mode type, std::string file_name) {
     std::cout << "Creating table..." << std::endl;
-    this->file_m = new Isam(file_name);
+    if (type == Table::mode::ext_hash) {
+        // this->file_m = new Ext_Hash(file_name);
+    } else if (type == Table::mode::isam) {
+        this->file_m = new Isam(file_name);
+    } else if (type == Table::mode::avl_tree) {
+        this->file_m = new AVLFile(file_name);
+    } else {
+        this->file_m = nullptr;
+        throw std::invalid_argument("Invalid mode");
+    }
 }
 
 Table::~Table() {
@@ -27,10 +40,10 @@ bool Table::remove(T key) {
     return this->file_m->remove(key);
 }
 
-bool Table::isLoaded(){
+bool Table::isLoaded() {
     return this->file_m->loaded;
 }
 
-void Table::setLoaded(){
+void Table::setLoaded() {
     this->file_m->loaded = true;
 }

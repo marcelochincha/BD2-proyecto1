@@ -1,7 +1,12 @@
 #include "avl_fm.hpp"
 
 AVLFile::AVLFile(std::string filename) : File_manager(filename) {
-    std::fstream file(this->filename, std::ios::in | std::ios::out | std::ios::binary);
+    std::cout << "AVLFile constructor" << std::endl;
+    init_file();
+};
+
+void AVLFile::init_file() {
+    std::fstream file(this->filename, std::ios::in | std::ios::out | std::ios::binary | std::ios::app);
     file.seekg(0, std::ios::beg);
     int bytes = file.tellg();
 
@@ -17,7 +22,7 @@ AVLFile::AVLFile(std::string filename) : File_manager(filename) {
 
     std::cout << "Init complete" << std::endl;
     file.close();
-};
+}
 
 // ----------------------------------------------------
 std::vector<Register> AVLFile::search(T key) {
@@ -55,7 +60,6 @@ bool AVLFile::add(Register data) {
         return true;
     }
 
-    // Usar CustomerID en lugar de cod
     link_children(file, record.reg.CustomerID, pos, this->root, -1);
     file.close();
     return true;
@@ -220,16 +224,19 @@ void AVLFile::right_rotate(std::fstream &file, int pos, int parent_pos) {
 }
 
 void AVLFile::search(std::fstream &file, int pos, T key, std::vector<Register> &results) {
+    std::cout << "iterating" << std::endl;
+    if (pos == -1) return;
     Register_avl node;
     file.seekg((pos * sizeof(Register_avl)) + sizeof(int), std::ios::beg);
     file.read((char *)&node, sizeof(Register_avl));
 
-    if (node.reg.CustomerID == key)
+    if (node.reg.CustomerID == key) {
         results.push_back(node.reg);
-    else if (key < node.reg.CustomerID)
-        return search(file, node.left, key, results);
+        std::cout << "Found: " << node.reg.CustomerID << std::endl;
+    } else if (key < node.reg.CustomerID)
+        search(file, node.left, key, results);
     else if (key > node.reg.CustomerID)
-        return search(file, node.right, key, results);
+        search(file, node.right, key, results);
     else
         std::cerr << "Error: value not found" << std::endl;
 }
@@ -249,7 +256,6 @@ void AVLFile::rangeSearch(std::fstream &file, T begin_key, T end_key, int pos, s
         rangeSearch(file, begin_key, end_key, node.left, results);
 }
 
-// TODO
 bool AVLFile::remove(std::fstream &file, int pos, int parent_pos, T key) {
     if (pos == -1) {
         return false;  // Clave no encontrada.
@@ -259,27 +265,41 @@ bool AVLFile::remove(std::fstream &file, int pos, int parent_pos, T key) {
     file.seekg(sizeof(int) + pos * sizeof(Register_avl));
     file.read((char *)&current, sizeof(Register_avl));
 
+    // Determinar dirección de la búsqueda
     if (key < current.reg.CustomerID) {
-        return remove(file, current.left, pos, key);
+        // Si la clave es menor, ir hacia la izquierda
+        bool done = remove(file, current.left, pos, key);
+        if (done) {
+            // Si se realizó una eliminación, actualizar el hijo izquierdo
+            write_left(file, pos, current.left);
+        }
+        return done;
     } else if (key > current.reg.CustomerID) {
-        return remove(file, current.right, pos, key);
+        // Si la clave es mayor, ir hacia la derecha
+        bool done = remove(file, current.right, pos, key);
+        if (done) {
+            // Si se realizó una eliminación, actualizar el hijo derecho
+            write_right(file, pos, current.right);
+        }
+        return done;
     } else {
-        // Clave encontrada, manejar los casos de eliminación
+        // Clave encontrada: manejar los casos de eliminación
         if (current.left == -1 || current.right == -1) {
             // Caso 1 o 2: No hijo o un solo hijo
             int temp = (current.left != -1) ? current.left : current.right;
             if (temp == -1) {
                 // No tiene hijos, simplemente eliminar
-
+                if (parent_pos != -1) {
+                    // Actualizar el enlace del padre
+                    updateParentLink(file, parent_pos, pos, -1);
+                }
+                return true;
             } else {
-                // Copia el hijo al nodo actual y luego elimina el hijo
-                file.seekg(sizeof(int) + temp * sizeof(Register_avl));
-                Register_avl tempReg;
-                file.read((char *)&tempReg, sizeof(Register_avl));
-                current = tempReg;  // Copia todos los campos
-                file.seekp(sizeof(int) + pos * sizeof(Register_avl));
-                file.write((char *)&current, sizeof(Register_avl));
-                pos = temp;
+                // Un hijo, mover el hijo al lugar del nodo actual
+                replaceNode(file, pos, temp);
+                // Actualizar el enlace del padre si es necesario
+                updateParentLink(file, parent_pos, pos, temp);
+                return true;
             }
         } else {
             // Caso 3: Dos hijos, usar el sucesor inmediato
@@ -288,16 +308,14 @@ bool AVLFile::remove(std::fstream &file, int pos, int parent_pos, T key) {
             file.seekg(sizeof(int) + successorPos * sizeof(Register_avl));
             file.read((char *)&successor, sizeof(Register_avl));
 
-            current.reg.CustomerID = successor.reg.CustomerID;  // Reemplaza con el sucesor
+            // Reemplazar datos y luego eliminar el sucesor
+            current.reg.CustomerID = successor.reg.CustomerID;
             file.seekp(sizeof(int) + pos * sizeof(Register_avl));
             file.write((char *)&current, sizeof(Register_avl));
 
-            // Elimina el sucesor
-            remove(file, current.right, pos, successor.reg.CustomerID);
+            remove(file, current.right, successorPos, successor.reg.CustomerID);
+            return true;
         }
-        updateHeight(file, pos);         // Actualiza la altura del nodo actual
-        balance(file, pos, parent_pos);  // Balancea el árbol
-        return true;
     }
 }
 
@@ -313,4 +331,32 @@ int AVLFile::min_value_node(std::fstream &file, int pos) {
         currentPos = current.left;
     }
     return currentPos;
+}
+
+void AVLFile::replaceNode(std::fstream &file, int node_pos, int child_pos) {
+    Register_avl child;
+    file.seekg(sizeof(int) + child_pos * sizeof(Register_avl));
+    file.read((char *)&child, sizeof(Register_avl));
+
+    // Actualizar el nodo en la posición actual con el hijo
+    file.seekp(sizeof(int) + node_pos * sizeof(Register_avl));
+    file.write((char *)&child, sizeof(Register_avl));
+
+    // Actualizar el enlace del padre si es necesario
+    updateParentLink(file, node_pos, node_pos, child_pos);
+}
+
+void AVLFile::updateParentLink(std::fstream &file, int parent_pos, int old_child_pos, int new_child_pos) {
+    Register_avl parent;
+    file.seekg(sizeof(int) + parent_pos * sizeof(Register_avl));
+    file.read((char *)&parent, sizeof(Register_avl));
+
+    if (parent.left == old_child_pos) {
+        parent.left = new_child_pos;
+    } else if (parent.right == old_child_pos) {
+        parent.right = new_child_pos;
+    }
+
+    file.seekp(sizeof(int) + parent_pos * sizeof(Register_avl));
+    file.write((char *)&parent, sizeof(Register_avl));
 }

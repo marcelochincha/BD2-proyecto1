@@ -45,9 +45,30 @@ Los AVL Files utilizan un Árbol AVL (Adelson-Velsky y Landis) para la organizac
 3. Rebalancear: Recorrer el camino de vuelta al nodo raíz, verificando y corrigiendo cualquier desbalance mediante rotaciones.
 
 ### Técnica 2: ISAM-Sparse Index / B+ Tree
-- Descripción de la técnica.
-- Algoritmo de inserción, eliminación y búsqueda.
-- Diagramas o gráficos ilustrativos.
+ISAM (Indexed Sequential Access Method) es una técnica de indexación que utiliza un índice disperso para mejorar la eficiencia en la búsqueda de registros en archivos de datos secuenciales. La estructura ISAM mantiene los datos en un archivo secuencial, junto con un índice separado que almacena las claves y los punteros a los registros. Los índices ISAM son estáticos en cuanto a su estructura de árbol, pero permiten eficiencia en las búsquedas y son especialmente útiles en entornos donde las consultas son más frecuentes que las actualizaciones.
+
+#### Algoritmo de Inserción:
+
+Buscar la posición correcta en el archivo de datos utilizando el índice.
+Si hay espacio en la página de datos, insertar el nuevo registro allí.
+Si no hay espacio, se utiliza un área de desbordamiento donde se pueden insertar registros adicionales.
+
+#### Algoritmo de Eliminación:
+
+Localizar el registro usando el índice.
+Marcar el registro como eliminado; los registros no se eliminan físicamente de inmediato.
+Reorganizar o compactar periódicamente el archivo y el área de desbordamiento para optimizar el espacio y el rendimiento.
+
+#### Algoritmo de Búsqueda:
+
+Utilizar la clave de búsqueda para localizar el rango en el índice.
+Acceder al archivo de datos directamente a través del puntero obtenido del índice.
+Si el registro no está en la página principal, buscar en el área de desbordamiento.
+
+![image](https://github.com/marcelochincha/BD2-proyecto1/assets/130480550/1e117ebf-174d-489e-bcd8-07d0ae3fbfaf)
+
+
+Diagrama ilustrativo de la estructura de ISAM-Sparse Index que muestra cómo se relaciona el archivo de datos secuencial con el índice disperso y el área de desbordamiento
 
 ### Técnica 3: Extendible Hashing
 - Descripción de la técnica.

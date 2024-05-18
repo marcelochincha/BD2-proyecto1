@@ -4,6 +4,8 @@
 #include <queue>
 #include <sstream>
 
+#include "csvLoader.hpp"
+
 Database::Database() {}
 
 Database::~Database() {
@@ -41,6 +43,16 @@ bool assignFloat(float& f, std::queue<std::string>& tokens) {
     return false;
 }
 
+bool assingChar(char& c, std::queue<std::string>& tokens) {
+    std::string s = tokens.front();
+    tokens.pop();
+    if (s.size() == 1) {
+        c = s[0];
+        return true;
+    }
+    return false;
+}
+
 bool assignString(char* c, std::queue<std::string>& tokens) {
     strcpy(c, tokens.front().c_str());
     tokens.pop();
@@ -57,12 +69,12 @@ std::queue<std::string> separateBy(std::string str, char delim) {
     return tokens;
 }
 
+// INSERT INTO table_name VALUES =>(1, "A", 1, 1.0, "A", "A", "A", "A", 1.0, 1.0)<=
 bool getRegister(Register& r, std::string data) {
     // Remover parentesis
-    data = data.substr(1, data.size() - 2);
     std::queue<std::string> tokens = separateBy(data, ',');
 
-    if (assignInt(r.CustomerID, tokens) && assignString(r.ProductID, tokens) && assignInt(r.Quantity, tokens) &&
+    if (assignInt(r.CustomerID, tokens) && assingChar(r.ProductID, tokens) && assignInt(r.Quantity, tokens) &&
         assignFloat(r.Price, tokens) && assignString(r.TransactionDate, tokens) &&
         assignString(r.PaymentMethod, tokens) && assignString(r.StoreLocation, tokens) &&
         assignString(r.ProductCategory, tokens) && assignFloat(r.DiscountApplied, tokens) &&
@@ -72,9 +84,13 @@ bool getRegister(Register& r, std::string data) {
     return false;
 }
 
-
-
 std::string Database::execute(std::string query) {
+    std::cout << "Executing: " << query << "\n";
+
+    if (query == "") {
+        return "Empty command";
+    }
+
     // Tokenize
     // Separar por espacios
     std::queue<std::string> tokens = separateBy(query, ' ');
@@ -107,7 +123,10 @@ std::string Database::execute(std::string query) {
 
 // Ejemplo
 // CREATE TABLE table_name FROM FILE “C:\data.csv” using index HASH
-std::string Database::create_table(std::queue<std::string>& tokens) {
+std::string Database::create_table(std::queue<std::string> tokens) {
+    if (tokens.size() < 8) {
+        return "Invalid number of arguments (Should have spaces)";
+    }
     tokens.pop();  // Remove TABLE
 
     // Obtener nombre de la tabla
@@ -130,25 +149,24 @@ std::string Database::create_table(std::queue<std::string>& tokens) {
 
     // Crear tabla
     Table::mode type;
-    if (table_type == "avl") {
-        type = Table::mode::avl_tree;
-    } else if (table_type == "isam") {
+    Table* tNEW;
+    if (table_type == "ISAM") {
         type = Table::mode::isam;
-    } else if (table_type == "ext") {
-        type = Table::mode::ext_hash;
+        tNEW = new Table(type, table_name);
     } else {
         return "Invalid table type";
     }
-    tables[table_name] = new Table(type, table_name);
+    // Cargar datos
+    readCSV(file_path, tNEW);
 
-
-
-    return "Table created " + table_name + ", with data from:" + file_path + " with index" + table_type + ". (SUCCESS)";
+    tables[table_name] = tNEW;
+    return "Table created " + table_name + ", with data from: " + file_path + " with index " + table_type +
+           ". (SUCCESS)";
 }
 
 // Ejemplo
 // INSERT INTO table_name VALUES (...)
-std::string Database::insert(std::queue<std::string>& tokens) {
+std::string Database::insert(std::queue<std::string> tokens) {
     tokens.pop();  // Remove INTO
 
     // Obtener nombre de la tabla
@@ -180,7 +198,7 @@ std::string Database::insert(std::queue<std::string>& tokens) {
 
 // SELECT * FROM table_name WHERE CustomerID = 1
 // SELECT * FROM table_name WHERE CustomerID BETWEEN 1 AND 10
-std::string Database::select(std::queue<std::string>& tokens) {
+std::string Database::select(std::queue<std::string> tokens) {
     tokens.pop();  // Remove *
     tokens.pop();  // Remove FROM
     std::string table_name = tokens.front();
@@ -198,7 +216,7 @@ std::string Database::select(std::queue<std::string>& tokens) {
     std::string res = "";
     Table* table = tables[table_name];
     std::vector<Register> result;
-     if (compType == "BETWEEN") {
+    if (compType == "BETWEEN") {
         tokens.pop();  // Remove BETWEEN
         std::string value1 = tokens.front();
         tokens.pop();
@@ -209,16 +227,14 @@ std::string Database::select(std::queue<std::string>& tokens) {
             return "Table not found";
         }
         result = table->range_search(std::stoi(value1), std::stoi(value2));
-    }
-    else if (compType == "=") {
+    } else if (compType == "=") {
         std::string value = tokens.front();
         tokens.pop();
         if (tables.find(table_name) == tables.end()) {
             return "Table not found";
         }
         result = table->search(std::stoi(value));
-    }
-    else 
+    } else
         return "Invalid comparison type :" + compType;
 
     for (size_t i = 0; i < result.size(); i++) {
@@ -228,7 +244,7 @@ std::string Database::select(std::queue<std::string>& tokens) {
 }
 
 // REMOVE FROM table_name WHERE CustomerID = 1
-std::string Database::remove(std::queue<std::string>& tokens) {
+std::string Database::remove(std::queue<std::string> tokens) {
     tokens.pop();  // Remove FROM
 
     std::string table_name = tokens.front();
@@ -259,11 +275,9 @@ std::string Database::remove(std::queue<std::string>& tokens) {
     }
 
     Table* table = tables[table_name];
-    
-    if(table->remove(std::stoi(value)))
+
+    if (table->remove(std::stoi(value)))
         return "Values removed (SUCCESS)";
     else
         return "Error removing values (FAILURE)";
-
-
 }

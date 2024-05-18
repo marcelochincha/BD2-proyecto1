@@ -26,3 +26,11 @@ bool Table::add(Register data) {
 bool Table::remove(T key) {
     return this->file_m->remove(key);
 }
+
+bool Table::isLoaded(){
+    return this->file_m->loaded;
+}
+
+void Table::setLoaded(){
+    this->file_m->loaded = true;
+}

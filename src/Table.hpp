@@ -22,4 +22,6 @@ class Table {
     std::vector<Register> range_search(T begin_key, T end_key);
     bool add(Register data);
     bool remove(T key);
+    bool isLoaded();
+    void setLoaded();
 };

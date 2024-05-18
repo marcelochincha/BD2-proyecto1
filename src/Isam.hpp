@@ -5,10 +5,11 @@
 #include <string>
 #include <vector>
 
+#include "consumer_id_data.hpp"
 #include "file_manager.hpp"
 
-#define MAX_DEPTH 2
-#define PAGE_SIZE 1024
+#define MAX_DEPTH 3
+#define PAGE_SIZE 768  //
 
 // MD y MI son el número de registros que caben en una página de datos e índice.
 const int MI = (PAGE_SIZE - sizeof(int) - sizeof(long)) / ((sizeof(int) + sizeof(long)));
@@ -37,7 +38,8 @@ class Isam : public File_manager {
     std::vector<Register> range_search(T begin_key, T end_key);
     bool add(Register data);
     bool remove(T key);
-    void DEBUG_addIndexData(std::vector<T> keys);
+    // Recibe un array constante
+    void DEBUG_addIndexData(const int keys[consumer_id_data_size]);
 
    protected:
     // Iniciar archivos

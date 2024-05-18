@@ -1,16 +1,21 @@
 #include "Isam.hpp"
 
+#include <cmath>
+
+#include "consumer_id_data.hpp"
+
 //
 // PUBLIC
 //
 
 // Constructor
 Isam::Isam(std::string _filename) : File_manager(_filename) {
-    if (!fileExists(this->dataName())) this->init_file();
-
-    // Add index
-    std::vector<T> keys = {10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
-    this->DEBUG_addIndexData(keys);
+    if (!fileExists(this->dataName())) {
+        // Add index
+        this->init_file();
+        this->DEBUG_addIndexData(consumer_id);
+    } else
+        this->loaded = true;
 };
 
 // Destructor
@@ -34,9 +39,10 @@ std::vector<Register> Isam::range_search(T begin_key, T end_key) {
 };
 
 bool Isam::add(Register data) {
-    // Iniciar busqueda
+    // std::cout << "GOOD" << std::endl;
+    //  Iniciar busqueda
     long nextPage = getDataPage(data.CustomerID);
-    //std::cout << "Next page: " << nextPage << std::endl;
+    // std::cout << "Next page: " << nextPage << std::endl;
 
     // Insertar en el data page seleccionado
     std::fstream f;
@@ -63,38 +69,56 @@ bool Isam::remove(T key) {
 // DEBUG
 // Crea un page para cada indice
 // Keys deberia estar ordenado y tener la misma distribucion
-void Isam::DEBUG_addIndexData(std::vector<T> keys) {
-    if (keys.size() > MI) {
-        throw std::invalid_argument("Too many keys, reduce the number of keys to add.");
+void Isam::DEBUG_addIndexData(const int keys[consumer_id_data_size]) {
+    if (MAX_DEPTH < log(consumer_id_data_size) / log(MI)) {
+        throw std::invalid_argument("Too many keys, reduce the number of keys to add." + std::to_string(MAX_DEPTH) +
+                                    " < " + std::to_string(log(consumer_id_data_size) / log(MI)));
         return;
     }
 
-    if (MAX_DEPTH != 1) {
-        throw std::runtime_error("This value should be 1.");
-        return;
-    }
-
-    std::fstream indxFile(idxName(0), std::ios::binary | std::ios::in | std::ios::out);
     std::fstream dataFile(this->dataName(), std::ios::binary | std::ios::in | std::ios::out);
-
     dataFile.seekp(0, std::ios::beg);
-    indxFile.seekp(0, std::ios::beg);
-    IndexPage indexBuffer{1};
 
-    // Write default
-    DataPage dataBuffer{0, -1};
-    indexBuffer.pages[0] = dataFile.tellp();
-    dataFile.write((char *)&dataBuffer, sizeof(DataPage));
-    for (size_t i = 0; i < keys.size(); i++) {
-        indexBuffer.keys[i] = keys[i];
-        indexBuffer.pages[i + 1] = dataFile.tellp();
-        // RE USE DATA PAGE
-        dataFile.write((char *)&dataBuffer, sizeof(DataPage));
-        indexBuffer.n++;
+    int n = consumer_id_data_size;
+
+    for (int depth = 0; depth < MAX_DEPTH; depth++) {
+        std::fstream indxFile;
+        indxFile.open(this->idxName(depth), std::ios::binary | std::ios::in | std::ios::out);
+        indxFile.seekp(0, std::ios::beg);
+
+        int p_size = pow(MI, depth);
+        int step_size = n / p_size;
+        // std::cout << "Depth: " << depth  << "p_size:" << p_size << std::endl;
+
+        for (size_t i = 0; i < p_size; i++) {
+            int left = i * step_size;
+            int right = (i + 1) * step_size;
+            int inner_step = (right - left) / MI;
+
+            if (inner_step == 0) inner_step = 1;
+
+            // Crear index page
+            IndexPage indexBuffer{0};
+            // Rellenar
+
+            for (size_t j = 0; j < MI; j += 1) {
+                if (j > MI) throw std::runtime_error("Index out of bounds");
+
+                int next = left + j * inner_step;
+                if (next >= n || next > consumer_id_data_size) break;
+                indexBuffer.keys[j] = keys[next];
+                indexBuffer.pages[j] = left + j * inner_step;
+                indexBuffer.n++;
+
+                // Crear data page
+                DataPage dataBuffer{0, -1};
+                dataFile.write((char *)&dataBuffer, sizeof(DataPage));
+            }
+            indxFile.write((char *)&indexBuffer, sizeof(IndexPage));
+        }
+        indxFile.close();
     }
 
-    indxFile.write((char *)&indexBuffer, sizeof(IndexPage));
-    indxFile.close();
     dataFile.close();
 };
 
@@ -123,7 +147,7 @@ void Isam::init_file() {
 template <typename PageType>
 PageType Isam::loadPage(long pagePosition, std::fstream &f) {
     PageType toReturn{};
-    f.seekg(pagePosition , std::ios::beg);
+    f.seekg(pagePosition, std::ios::beg);
     f.read((char *)&toReturn, sizeof(PageType));
     return toReturn;
 };
@@ -131,7 +155,7 @@ PageType Isam::loadPage(long pagePosition, std::fstream &f) {
 long Isam::returnPage(IndexPage &page, const T key) {
     long toReturn = page.pages[0];
     for (int i = 0; i < page.n; i++) {
-        if (keyCmp(key,page.keys[i]) > 0)
+        if (keyCmp(key, page.keys[i]) > 0)
             toReturn = page.pages[i + 1];
         else
             break;
@@ -172,10 +196,15 @@ std::string Isam::dataName() {
 // OPERACIONES
 bool Isam::addToPage(const Register &record, long pagePos, std::fstream &f) {
     // Cargar la página
-    //std::cout << "Page pos: " << pagePos << std::endl;
+    // std::cout << "Page pos: " << pagePos << std::endl;
     DataPage data = this->loadPage<DataPage>(pagePos, f);
 
+    if (MD == 0) {
+        throw std::runtime_error("MD is 0");
+    }
+
     // Verificar si la página está llena
+    // std::cout << "Data n: " << data.n << std::endl;
     if (data.n >= MD) {
         // Crear nueva pagina si lo esta
         if (data.nextPage == -1) {
@@ -218,7 +247,7 @@ bool Isam::searchInPage(const T key, long pagePos, std::vector<Register> &buffer
     return founded;
 }
 
-bool Isam::removeInPage(const T key, long pagePos, std::fstream &f){
+bool Isam::removeInPage(const T key, long pagePos, std::fstream &f) {
     DataPage data = this->loadPage<DataPage>(pagePos, f);
     bool founded = false;
     bool checkNext = false;

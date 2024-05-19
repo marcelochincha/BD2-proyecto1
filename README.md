@@ -210,6 +210,8 @@ El análisis realizado sugiere que no existe una única solución óptima para t
 - Implementación de Cachés: Implementar mecanismos de caché inteligentes podría reducir significativamente los tiempos de acceso a datos, especialmente para ISAM y Extendible Hashing donde las operaciones pueden beneficiarse de un rápido acceso a los datos recientemente utilizados.
   
 - Optimización de Algoritmos de Balanceo en AVL: Mejorar los algoritmos de rotación y balanceo en los AVL Files podría ofrecer mejoras en el rendimiento de inserción y eliminación.
+
+- Optimización de "Range_search" en ISAM: Mejorar el algoritmo de búsqueda por rango en la estructura del ISAM, para que de esta manera sea mucho más efectivo, ya que el algoritmo actual utiliza una función sencilla pero eficiente
   
 - Híbridos de Estructuras de Datos: Experimentar con estructuras híbridas que combinen las fortalezas de los diferentes métodos puede ofrecer un equilibrio entre eficiencia en la inserción, eliminación y búsqueda.
   

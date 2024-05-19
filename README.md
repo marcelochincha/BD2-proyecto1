@@ -14,6 +14,9 @@ Proyecto 1 de BD2
 ## Video de Demo
 https://drive.google.com/file/d/1lqpbYojrZsNMeX5i6begj5daDFlBQSEn/view?usp=sharing
 
+## Informe
+[Wiki en Github](https://github.com/marcelochincha/BD2-proyecto1/wiki)
+
 ## Compilación y ejecución
 
 ## Comandos Disponibles

@@ -103,8 +103,22 @@ Diagrama ilustrativo de la estructura de Extendible Hashing, que muestra cómo f
 
 ## Análisis Comparativo Teórico
 
-- Comparación teórica de las técnicas implementadas basándose en accesos a memoria secundaria para inserción, búsqueda y eliminación.
-- Optimización de código en el manejo de memoria secundaria.
+//TABLA VACÍA
+
+| Técnica         | Inserción (accesos a memoria) | Búsqueda (accesos a memoria) | Eliminación (accesos a memoria) |
+|-----------------|-------------------------------|------------------------------|----------------------------------|
+| ISAM            |                               |                              |                                  |
+| Extendible Hash |                               |                              |                                  |
+
+//ANÁLISIS
+
+| Técnica         | Inserción                   | Búsqueda                  | Eliminación               |
+|-----------------|-----------------------------|---------------------------|---------------------------|
+| ISAM            | Índice + datos/overflow     | Índice + datos            | Índice + marcado          |
+| Extendible Hash | Directorio + bucket/split   | Directorio + bucket       | Directorio + bucket/merge |
+
+
+
 
 ## Resultados Experimentales
 

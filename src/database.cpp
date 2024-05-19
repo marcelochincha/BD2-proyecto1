@@ -25,21 +25,22 @@ bool assignInt(int& i, std::queue<std::string>& tokens) {
     std::string s = tokens.front();
     tokens.pop();
 
-    if (isNumber(tokens.front())) {
-        i = std::stoi(tokens.front());
+    if (isNumber(s)) {
+        i = std::stoi(s);
         return true;
     }
+    std::cout << "Error decoding int: " << s << std::endl;
     return false;
 }
 
 bool assignFloat(float& f, std::queue<std::string>& tokens) {
     std::string s = tokens.front();
     tokens.pop();
-    if (isNumber(tokens.front())) {
+    if (isNumber(s)) {
         f = std::stof(s);
-        tokens.pop();
         return true;
     }
+    std::cout << "Error decoding float: " << s << std::endl;
     return false;
 }
 
@@ -50,6 +51,7 @@ bool assingChar(char& c, std::queue<std::string>& tokens) {
         c = s[0];
         return true;
     }
+    std::cout << "Error decoding char: " << s << std::endl;
     return false;
 }
 
@@ -176,26 +178,31 @@ std::string Database::create_table(std::queue<std::string> tokens) {
 // Ejemplo
 // INSERT INTO table_name VALUES (...)
 std::string Database::insert(std::queue<std::string> tokens) {
+    if (tokens.size() < 4) {
+        return "Invalid number of arguments (Should have spaces)";
+    }
+
+
     tokens.pop();  // Remove INTO
 
     // Obtener nombre de la tabla
     std::string table_name = tokens.front();
+    if (tables.find(table_name) == tables.end()) {
+        return "Table not found";
+    }
+
     tokens.pop();
     tokens.pop();  // Remove VALUES
 
     // Obtener valores ,(0,0,0,0) el campo entre parentesis debe estar JUNTO
     std::string data = tokens.front();
+    data = data.substr(1, data.size() - 2); // Remover parentesis
 
+    std::cout << "Data: " << data << std::endl;
     // Crear registro
     Register rtemp;
 
     if (!getRegister(rtemp, data)) return "Error decoding values (ERROR)";
-
-    // Insert values
-    if (tables.find(table_name) == tables.end()) {
-        return "Table not found";
-    }
-
     Table* table = tables[table_name];
 
     if (table->add(rtemp)) {
@@ -208,6 +215,7 @@ std::string Database::insert(std::queue<std::string> tokens) {
 // SELECT * FROM table_name WHERE CustomerID = 1
 // SELECT * FROM table_name WHERE CustomerID BETWEEN 1 AND 10
 std::string Database::select(std::queue<std::string> tokens) {
+
     tokens.pop();  // Remove *
     tokens.pop();  // Remove FROM
     std::string table_name = tokens.front();
@@ -261,6 +269,9 @@ std::string Database::select(std::queue<std::string> tokens) {
 
 // REMOVE FROM table_name WHERE CustomerID = 1
 std::string Database::remove(std::queue<std::string> tokens) {
+    if (tokens.size() < 6) {
+        return "Invalid number of arguments (Should have spaces)";
+    }
     tokens.pop();  // Remove FROM
 
     std::string table_name = tokens.front();

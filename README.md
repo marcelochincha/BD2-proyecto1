@@ -137,7 +137,7 @@ Buscar en el bucket el registro deseado.
 
 ## Resultados Experimentales
 
-![image](https://github.com/marcelochincha/BD2-proyecto1/assets/130480550/0c063ffa-230f-4a00-bfec-b4a21108a909)
+![image](https://github.com/marcelochincha/BD2-proyecto1/assets/130480550/7876190a-c920-4c19-9710-c8e3ddea1c94)
 
 
 ## Parser SQL

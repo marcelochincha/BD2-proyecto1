@@ -168,5 +168,20 @@ DELETE FROM datitos WHERE CustomerID = 109346
 
 ## Conclusión
 
-- Resumen de los hallazgos más importantes del proyecto.
-- Reflexiones finales y posibles mejoras o continuaciones del proyecto.
+#### Resumen de Hallazgos
+El proyecto ha demostrado que la elección de una estructura de datos adecuada puede tener un impacto significativo en el rendimiento de un sistema de gestión de bases de datos, especialmente en aplicaciones con un volumen alto de transacciones como las ventas minoristas en línea. A través del uso de tres técnicas de organización de archivos — AVL Files, ISAM, y Extendible Hashing — se logró abordar diferentes aspectos del manejo de datos:
+
+AVL Files proveyeron un acceso balanceado y eficiente, ideal para operaciones que requieren una gran cantidad de inserciones y eliminaciones.
+ISAM fue útil por su eficiencia en las búsquedas, especialmente en entornos donde las consultas son más frecuentes que las actualizaciones.
+Extendible Hashing destacó en entornos dinámicos donde el tamaño de los datos puede cambiar significativamente, permitiendo una escalabilidad eficiente sin rehashing costoso.
+Los resultados experimentales validaron la teoría de que cada técnica tiene sus fortalezas dependiendo de la naturaleza de las operaciones y los requisitos del sistema, como se reflejó en la variación de los tiempos de operación para las diferentes técnicas.
+
+#### Reflexiones Finales y Mejoras Futuras
+El análisis realizado sugiere que no existe una única solución óptima para todos los escenarios en la gestión de bases de datos. Cada técnica tiene particularidades que la hacen más adecuada para ciertos tipos de operaciones y menos para otras. Por lo tanto, la elección debe basarse en una comprensión detallada de los patrones de acceso a los datos y los requisitos específicos del sistema.
+
+#### Posibles Mejoras:
+
+Implementación de Cachés: Implementar mecanismos de caché inteligentes podría reducir significativamente los tiempos de acceso a datos, especialmente para ISAM y Extendible Hashing donde las operaciones pueden beneficiarse de un rápido acceso a los datos recientemente utilizados.
+Optimización de Algoritmos de Balanceo en AVL: Mejorar los algoritmos de rotación y balanceo en los AVL Files podría ofrecer mejoras en el rendimiento de inserción y eliminación.
+Híbridos de Estructuras de Datos: Experimentar con estructuras híbridas que combinen las fortalezas de los diferentes métodos puede ofrecer un equilibrio entre eficiencia en la inserción, eliminación y búsqueda.
+Ajustes Dinámicos en Extendible Hashing: Optimizar el proceso de división y fusión de buckets para adaptarse mejor a los patrones cambiantes de carga de datos.

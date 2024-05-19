@@ -84,9 +84,13 @@ Extendible Hashing es una estructura de datos dinámica que se utiliza para mane
 
 Calcular el hash de la clave para determinar el bucket correspondiente.
 Si el bucket no está lleno, insertar el registro.
+
 Si el bucket está lleno, dividir el bucket:
+
 Incrementar la profundidad local del bucket.
+
 Redistribuir las entradas según el nuevo hash.
+
 Si es necesario, duplicar el tamaño del directorio.
 
 #### Algoritmo de Eliminación:
@@ -109,7 +113,7 @@ Buscar en el bucket el registro deseado.
 
 | Técnica         | Inserción (accesos a memoria) | Búsqueda (accesos a memoria) | Eliminación (accesos a memoria) |
 |-----------------|-------------------------------|------------------------------|----------------------------------|
-| ISAM            |   O(logn) BC / O(n) WC        |        O(logn)               |        O(logn) BC / O(n) WC      |
+| ISAM            |   O(logk) BC / O(k*m) WC      |        O(logk)               |        O(logk) BC / O(k*m) WC    |
 | Extendible Hash |   O(k*m)                      |       O(k*m)                 |           O(k*m)                 | 
 | AVL             |   O(logn)                     |         O(logn)              |           O(logn)                |
 

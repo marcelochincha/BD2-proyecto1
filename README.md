@@ -18,6 +18,12 @@ https://drive.google.com/file/d/1lqpbYojrZsNMeX5i6begj5daDFlBQSEn/view?usp=shari
 [Wiki en Github](https://github.com/marcelochincha/BD2-proyecto1/wiki)
 
 ## Compilación y ejecución
+```bash
+cd build
+cmake ..
+cmake --build .
+./DatabaseUISimulation
+```
 
 ## Comandos Disponibles
 

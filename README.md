@@ -148,7 +148,7 @@ Pasos:
 ## Resultados Experimentales
 
 ![image](https://github.com/marcelochincha/BD2-proyecto1/assets/130480550/7876190a-c920-4c19-9710-c8e3ddea1c94)
-
+El grafico de barras en escala logaritma permite comparar los 3 tipos de indexacion de datos en  5 operaciones respectivas. Se puede concluir que crear las tablas a partir de datos conlleva mas tiempo de lo requerido comparación de las otras operaciones mas simples. Aparte, la operacion "BETWEEN" tiene un rendimiento peor usando ISAM, esto se debe a que se implemento la busqueda por rango utilizando un algoritmo muy sencillo (iteracion y busqueda unitaria) el cual por cuestiones de tiempo, no utiliza la ventaja de ISAM para indexar archivos.
 
 ## Parser SQL
 
@@ -214,7 +214,7 @@ El análisis realizado sugiere que no existe una única solución óptima para t
   
 - Optimización de Algoritmos de Balanceo en AVL: Mejorar los algoritmos de rotación y balanceo en los AVL Files podría ofrecer mejoras en el rendimiento de inserción y eliminación.
 
-- Optimización de "Range_search" en ISAM: Mejorar el algoritmo de búsqueda por rango en la estructura del ISAM, para que de esta manera sea mucho más efectivo, ya que el algoritmo actual utiliza una función sencilla pero eficiente
+- Optimización de "Range_search" en ISAM: Mejorar el algoritmo de búsqueda por rango en la estructura del ISAM, para que de esta manera sea mucho más efectivo, ya que el algoritmo actual utiliza una función sencilla.
   
 - Híbridos de Estructuras de Datos: Experimentar con estructuras híbridas que combinen las fortalezas de los diferentes métodos puede ofrecer un equilibrio entre eficiencia en la inserción, eliminación y búsqueda.
   

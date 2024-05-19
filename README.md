@@ -172,7 +172,7 @@ Comandos Disponibles:
 CREATE TABLE datitos FROM FILE dataA.csv using index AVL
 SELECT * FROM datitos WHERE CustomerID = 109318
 SELECT * FROM datitos WHERE CustomerID BETWEEN 109000 AND 109888
-INSERT * FROM
+INSERT INTO table_name VALUES (...)
 DELETE FROM datitos WHERE CustomerID = 109346
 ```
 

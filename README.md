@@ -136,8 +136,28 @@ Diagrama ilustrativo de la estructura de Extendible Hashing, que muestra cómo f
 
 ## Parser SQL
 
-- Explicación del proceso de implementación del parser de SQL.
-- Ejemplos de sentencias SQL manejadas y cómo se procesan en el sistema.
+### Explicación del Proceso de Implementación
+
+El parser de SQL se basa en una clase `Database` que gestiona la ejecución de las consultas SQL. El proceso incluye:
+
+1. **Tokenización:** Descomposición de la consulta en tokens.
+2. **Análisis de Tokens:** Procesamiento basado en la operación SQL.
+3. **Ejecución de Comandos:** Métodos específicos para cada operación SQL (`create_table`, `insert`, `select`, `remove`).
+
+### Ejemplos de Sentencias SQL Manejadas
+
+- **Crear Tabla:**
+  ```sql
+  CREATE TABLE Customers (ID int, Name varchar(100))
+  
+- **Insert**
+    INSERT INTO Customers VALUES (1, 'John Doe')
+  
+- **Select**  
+    SELECT * FROM Customers WHERE ID = 1
+  
+-**Delete** 
+    DELETE FROM Customers WHERE ID = 1
 
 ## Conclusión
 

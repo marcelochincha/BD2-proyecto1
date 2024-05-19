@@ -11,6 +11,9 @@ Proyecto 1 de BD2
 
 **Blanco Gutierrez, Gabriel Blanco**
 
+## Video de Demo
+https://drive.google.com/file/d/1lqpbYojrZsNMeX5i6begj5daDFlBQSEn/view?usp=sharing
+
 ## Datos: Retail Transaction Dataset
 
 ### Fuente

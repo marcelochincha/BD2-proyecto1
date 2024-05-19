@@ -1,12 +1,14 @@
 #include <QApplication>
 #include <QHeaderView>
 #include <QIcon>
+#include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QTableWidget>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <chrono>
 #include <filesystem>
 #include <iostream>
 
@@ -30,6 +32,10 @@ int main(int argc, char *argv[]) {
 
     // Top layout for help button
     QHBoxLayout *topLayout = new QHBoxLayout;
+
+    // Execution time label
+    QLabel *executionTimeLabel = new QLabel("Execution time: ...");
+    topLayout->addWidget(executionTimeLabel);
 
     // Spacer to push the help button to the right
     QSpacerItem *spacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -64,7 +70,16 @@ int main(int argc, char *argv[]) {
         // Print the query input to the console
         QString query = queryInput->text();
         std::cout << "Query: " << query.toStdString() << std::endl;
+
+        auto start = std::chrono::high_resolution_clock::now();
+
         std::cout << db->execute(query.toStdString()) << std::endl;
+
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = end - start;
+
+        // Update the execution time label
+        executionTimeLabel->setText("Execution time: " + QString::number(elapsed.count()) + " seconds");
 
         resultTable->setRowCount(db->last_results.size());
         for (int i = 0; i < db->last_results.size(); i++) {
@@ -80,12 +95,6 @@ int main(int argc, char *argv[]) {
             resultTable->setItem(i, 8, new QTableWidgetItem(QString::number(reg.DiscountApplied)));
             resultTable->setItem(i, 9, new QTableWidgetItem(QString::number(reg.TotalAmount)));
         }
-
-        // Dummy data to simulate query result
-        // resultTable->setRowCount(1);
-        // resultTable->setItem(0, 0, new QTableWidgetItem("Data 1"));
-        // resultTable->setItem(0, 1, new QTableWidgetItem("Data 2"));
-        // resultTable->setItem(0, 2, new QTableWidgetItem("Data 3"));
     };
 
     QObject::connect(executeButton, &QPushButton::clicked, executeQuery);
@@ -95,20 +104,20 @@ int main(int argc, char *argv[]) {
     QObject::connect(helpButton, &QPushButton::clicked, [&]() {
         QMessageBox::information(&window, "Help",
                                  "Create table:\n"
-                                 "create table Customer from file “C:\\data.csv” using index "
-                                 "hash(“DNI”)\n\n"
+                                 "CREATE TABLE Customer FROM FILE dataA.csv USING INDEX"
+                                 "AVL | HASH | ISAM\n\n"
                                  "Select:\n"
-                                 "select * from Customer where DNI = x\n"
-                                 "select * from Customer where DNI between x and y\n\n"
+                                 "SELECT * FROM Customer WHERE CustomerID = x\n"
+                                 "SELECT * FROM Customer WHERE CustomerID BETWEEN x AND y\n\n"
                                  "Insert:\n"
-                                 "insert into Customer values (...)\n\n"
+                                 "INSERT INTO Customer VALUES (x,y,z,...)\n\n"
                                  "Delete:\n"
-                                 "delete from Customer where DNI = x");
+                                 "DELETE FROM Customer WHERE CustomerID = x");
     });
     // ------------------------------------------------------------------------
 
     window.setLayout(mainLayout);
-    window.resize(400, 300);
+    window.resize(600, 450);
     window.show();
 
     return app.exec();

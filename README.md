@@ -115,7 +115,7 @@ Buscar en el bucket el registro deseado.
 |-----------------|-------------------------------|------------------------------|----------------------------------|
 | ISAM            |   O(logk) BC / O(k*m) WC      |        O(logk)               |        O(logk) BC / O(k*m) WC    |
 | Extendible Hash |   O(k*m)                      |       O(k*m)                 |           O(k*m)                 | 
-| AVL             |   O(logn)                     |         O(logn)              |           O(logn)                |
+| AVL             |   O(logk)                     |         O(logk)              |           O(logk)                |
 
 
 ## Resultados Experimentales

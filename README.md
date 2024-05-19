@@ -109,9 +109,9 @@ Buscar en el bucket el registro deseado.
 
 | Técnica         | Inserción (accesos a memoria) | Búsqueda (accesos a memoria) | Eliminación (accesos a memoria) |
 |-----------------|-------------------------------|------------------------------|----------------------------------|
-| ISAM            |                               |                              |                                  |
-| Extendible Hash |                               |                              |                                  |
-| AVL             |                               |                              |                                  |
+| ISAM            |   O(logn) BC / O(n) WC        |        O(logn)               |        O(logn) BC / O(n) WC      |
+| Extendible Hash |  O(1) amortizado / O(n) WC    |        O(1)                  |           O(1)                   |
+| AVL             |   O(logn)                     |         O(logn)              |           O(logn)                |
 
 
 ## Resultados Experimentales

@@ -59,21 +59,31 @@ ISAM (Indexed Sequential Access Method) es una técnica de indexación que utili
 
 #### Algoritmo de Inserción:
 
-Buscar la posición correcta en el archivo de datos utilizando el índice.
-Si hay espacio en la página de datos, insertar el nuevo registro allí.
-Si no hay espacio, se utiliza un área de desbordamiento donde se pueden insertar registros adicionales.
+Pasos:
+
+- Buscar la posición correcta en el archivo de datos utilizando el índice.
+
+- Si hay espacio en la página de datos, insertar el nuevo registro allí.
+
+- Si no hay espacio, se utiliza un área de desbordamiento donde se pueden insertar registros adicionales.
 
 #### Algoritmo de Eliminación:
 
-Localizar el registro usando el índice.
-Marcar el registro como eliminado; los registros no se eliminan físicamente de inmediato.
-Reorganizar o compactar periódicamente el archivo y el área de desbordamiento para optimizar el espacio y el rendimiento.
+Pasos:
+
+- Localizar el registro usando el índice.
+- Marcar el registro como eliminado; los registros no se eliminan físicamente de inmediato.
+- Reorganizar o compactar periódicamente el archivo y el área de desbordamiento para optimizar el espacio y el rendimiento.
 
 #### Algoritmo de Búsqueda:
 
-Utilizar la clave de búsqueda para localizar el rango en el índice.
-Acceder al archivo de datos directamente a través del puntero obtenido del índice.
-Si el registro no está en la página principal, buscar en el área de desbordamiento.
+Pasos:
+
+- Utilizar la clave de búsqueda para localizar el rango en el índice.
+  
+- Acceder al archivo de datos directamente a través del puntero obtenido del índice.
+  
+- Si el registro no está en la página principal, buscar en el área de desbordamiento.
 
 
 ### Técnica 3: Extendible Hashing
@@ -83,21 +93,28 @@ Extendible Hashing es una estructura de datos dinámica que se utiliza para mane
 #### Algoritmo de Inserción:
 
 Calcular el hash de la clave para determinar el bucket correspondiente.
-Si el bucket no está lleno, insertar el registro.
 
-Si el bucket está lleno, dividir el bucket:
+Pasos:
 
-Incrementar la profundidad local del bucket.
+- Si el bucket no está lleno, insertar el registro.
 
-Redistribuir las entradas según el nuevo hash.
+- Si el bucket está lleno, dividir el bucket:
 
-Si es necesario, duplicar el tamaño del directorio.
+- Incrementar la profundidad local del bucket.
+
+- Redistribuir las entradas según el nuevo hash.
+
+- Si es necesario, duplicar el tamaño del directorio.
 
 #### Algoritmo de Eliminación:
 
-Calcular el hash de la clave para encontrar el bucket.
-Eliminar el registro del bucket.
-Si el bucket está vacío, considerar la posibilidad de combinarlo con un bucket hermano y disminuir el tamaño del directorio.
+Pasos:
+
+- Calcular el hash de la clave para encontrar el bucket.
+  
+- Eliminar el registro del bucket.
+  
+- Si el bucket está vacío, considerar la posibilidad de combinarlo con un bucket hermano y disminuir el tamaño del directorio.
 
 
 #### Algoritmo de Búsqueda:

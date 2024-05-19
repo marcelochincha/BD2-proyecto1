@@ -9,6 +9,7 @@
 class AVLFile : public File_manager {
    private:
     int root;
+    int free_list;
 
    public:
     AVLFile(std::string filename);
@@ -47,9 +48,15 @@ class AVLFile : public File_manager {
 
     void search(std::fstream &file, int pos, T key, std::vector<Register> &results);
     void rangeSearch(std::fstream &file, T begin_key, T end_key, int pos, std::vector<Register> &results);
-    bool remove(std::fstream &file, int pos, int parent_pos, T key);
+    bool remove(std::fstream &file, int pos, int parent_pos, T key, int which_child);
     int min_value_node(std::fstream &file, int pos);
-    // añado
+
+    int write_new_register(std::fstream &file, Register_avl &record);
+    Register_avl read_register(std::fstream &file, int pos);
+    void write_register(std::fstream &file, int pos, Register_avl &record);
+
+        // añado
     void updateParentLink(std::fstream &file, int parent_pos, int old_child_pos, int new_child_pos);
     void replaceNode(std::fstream &file, int node_pos, int child_pos);
+
 };

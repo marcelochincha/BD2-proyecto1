@@ -27,10 +27,13 @@ struct Register_avl {
     int right;
     int height;
 
+    int free_list;
+
     Register_avl() {
         left = -1;
         right = -1;
         height = 0;
+        free_list = -1;
     }
 
     Register_avl(Register r) {
@@ -38,6 +41,7 @@ struct Register_avl {
         left = -1;
         right = -1;
         height = 0;
+        free_list = -1;
     }
 };
 typedef int T;

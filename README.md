@@ -1,5 +1,15 @@
-# BD2-proyecto1
+# BD2-proyecto1: Organización de transacciones de compras en línea
 Proyecto 1 de BD2
+
+## Integrantes
+
+**Cespedes Zevallos, Adrian Joshep**
+
+**Chincha León, Marcelo Andres**
+
+**Herencia Galvan, David Manfredo**
+
+**Blanco Gutierrez, Gabriel Blanco**
 
 ## Datos: Retail Transaction Dataset
 
@@ -128,36 +138,43 @@ Diagrama ilustrativo de la estructura de Extendible Hashing, que muestra cómo f
 - Métricas evaluadas: total de accesos a disco duro (read & write) y tiempo de ejecución en milisegundos.
 - Discusión y análisis de los resultados obtenidos.
 
-## Pruebas de Uso y Presentación
-
-- Descripción de las pruebas de uso realizadas para validar la funcionalidad del aplicativo.
-- Capturas de pantalla de la interfaz gráfica.
-- Enlace al video demostrativo (incluir el enlace directo al video).
-
 ## Parser SQL
 
 ### Explicación del Proceso de Implementación
 
-El parser de SQL se basa en una clase `Database` que gestiona la ejecución de las consultas SQL. El proceso incluye:
+El parser SQL se implmenta en la clase database, la cual utiliza un método simple de tokenizacion (separar por espacios), los token obtenidos se cargan a un queue que permite extraer uno a uno los tokens y utilizar los pertinentes, de acuerdo a la operación requerida. No obstante, la implementación propuesta ignora por completo las keywords que no son necesarias para la acción, lo que podría conllevar a aceptar queries que no siguen la sintaxiss correcta de SQL. A pesar de esto, recurrimos a esta forma por questiones de complejidad y tiempo.
 
-1. **Tokenización:** Descomposición de la consulta en tokens.
-2. **Análisis de Tokens:** Procesamiento basado en la operación SQL.
-3. **Ejecución de Comandos:** Métodos específicos para cada operación SQL (`create_table`, `insert`, `select`, `remove`).
+```cpp
+    // Obtener nombre de la tabla
+    std::string table_name = tokens.front();
 
-### Ejemplos de Sentencias SQL Manejadas
+    tokens.pop();
+    tokens.pop();  // Remove FROM
+    tokens.pop();  // Remove FILE
 
-- **Crear Tabla:**
-  ```sql
-  CREATE TABLE Customers (ID int, Name varchar(100))
-  
-- **Insert**
-    INSERT INTO Customers VALUES (1, 'John Doe')
-  
-- **Select**  
-    SELECT * FROM Customers WHERE ID = 1
-  
--**Delete** 
-    DELETE FROM Customers WHERE ID = 1
+    // Obtener path del archivo
+    std::string file_path = tokens.front();
+
+    tokens.pop();
+    tokens.pop();  // Remove USING
+    tokens.pop();  // Remove INDEX
+
+    // Obtener tipo de tabla
+    std::string table_type = tokens.front();
+    tokens.pop();
+
+    // Crear tabla
+    Table::mode type;
+    Table* tNEW;
+    if (table_type == "ISAM") {
+        type = Table::mode::isam;
+        tNEW = new Table(type, table_name);
+    } else {
+        return "Invalid table type";
+    }
+```
+
+Parte de código de creación de tabla.
 
 ## Conclusión
 

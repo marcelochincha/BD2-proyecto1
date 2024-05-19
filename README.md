@@ -75,10 +75,6 @@ Utilizar la clave de búsqueda para localizar el rango en el índice.
 Acceder al archivo de datos directamente a través del puntero obtenido del índice.
 Si el registro no está en la página principal, buscar en el área de desbordamiento.
 
-![image](https://github.com/marcelochincha/BD2-proyecto1/assets/130480550/1e117ebf-174d-489e-bcd8-07d0ae3fbfaf)
-
-
-Diagrama ilustrativo de la estructura de ISAM-Sparse Index que muestra cómo se relaciona el archivo de datos secuencial con el índice disperso y el área de desbordamiento
 
 ### Técnica 3: Extendible Hashing
 
@@ -105,11 +101,6 @@ Si el bucket está vacío, considerar la posibilidad de combinarlo con un bucket
 Calcular el hash de la clave.
 Seguir el puntero del directorio al bucket correspondiente.
 Buscar en el bucket el registro deseado.
-
-![image](https://github.com/marcelochincha/BD2-proyecto1/assets/130480550/f3bff377-fcfe-4975-9160-5ca733613d25)
-
-
-Diagrama ilustrativo de la estructura de Extendible Hashing, que muestra cómo funciona el directorio, los buckets, y la división y expansión de estos al llenarse
 
 ## Análisis Comparativo Teórico
 
@@ -175,6 +166,15 @@ El parser SQL se implmenta en la clase database, la cual utiliza un método simp
 ```
 
 Parte de código de creación de tabla.
+
+Comandos Disponibles:
+```Mysql
+CREATE TABLE datitos FROM FILE dataA.csv using index AVL
+SELECT * FROM datitos WHERE CustomerID = 109318
+SELECT * FROM datitos WHERE CustomerID BETWEEN 109000 AND 109888
+INSERT * FROM
+DELETE FROM datitos WHERE CustomerID = 109346
+```
 
 ## Conclusión
 

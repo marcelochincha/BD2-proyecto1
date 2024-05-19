@@ -104,13 +104,13 @@ Buscar en el bucket el registro deseado.
 
 ## Análisis Comparativo Teórico
 
-
-//TABLA VACÍA
+**k**= tamaño máximo de bucket
+**m**=overflow de buckets
 
 | Técnica         | Inserción (accesos a memoria) | Búsqueda (accesos a memoria) | Eliminación (accesos a memoria) |
 |-----------------|-------------------------------|------------------------------|----------------------------------|
 | ISAM            |   O(logn) BC / O(n) WC        |        O(logn)               |        O(logn) BC / O(n) WC      |
-| Extendible Hash |  O(1) amortizado / O(n) WC    |        O(1)                  |           O(1)                   |
+| Extendible Hash |   O(k*m)                      |       O(k*m)                 |           O(k*m)                 | 
 | AVL             |   O(logn)                     |         O(logn)              |           O(logn)                |
 
 

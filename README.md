@@ -45,14 +45,61 @@ Los AVL Files utilizan un Árbol AVL (Adelson-Velsky y Landis) para la organizac
 3. Rebalancear: Recorrer el camino de vuelta al nodo raíz, verificando y corrigiendo cualquier desbalance mediante rotaciones.
 
 ### Técnica 2: ISAM-Sparse Index / B+ Tree
-- Descripción de la técnica.
-- Algoritmo de inserción, eliminación y búsqueda.
-- Diagramas o gráficos ilustrativos.
+ISAM (Indexed Sequential Access Method) es una técnica de indexación que utiliza un índice disperso para mejorar la eficiencia en la búsqueda de registros en archivos de datos secuenciales. La estructura ISAM mantiene los datos en un archivo secuencial, junto con un índice separado que almacena las claves y los punteros a los registros. Los índices ISAM son estáticos en cuanto a su estructura de árbol, pero permiten eficiencia en las búsquedas y son especialmente útiles en entornos donde las consultas son más frecuentes que las actualizaciones.
+
+#### Algoritmo de Inserción:
+
+Buscar la posición correcta en el archivo de datos utilizando el índice.
+Si hay espacio en la página de datos, insertar el nuevo registro allí.
+Si no hay espacio, se utiliza un área de desbordamiento donde se pueden insertar registros adicionales.
+
+#### Algoritmo de Eliminación:
+
+Localizar el registro usando el índice.
+Marcar el registro como eliminado; los registros no se eliminan físicamente de inmediato.
+Reorganizar o compactar periódicamente el archivo y el área de desbordamiento para optimizar el espacio y el rendimiento.
+
+#### Algoritmo de Búsqueda:
+
+Utilizar la clave de búsqueda para localizar el rango en el índice.
+Acceder al archivo de datos directamente a través del puntero obtenido del índice.
+Si el registro no está en la página principal, buscar en el área de desbordamiento.
+
+![image](https://github.com/marcelochincha/BD2-proyecto1/assets/130480550/1e117ebf-174d-489e-bcd8-07d0ae3fbfaf)
+
+
+Diagrama ilustrativo de la estructura de ISAM-Sparse Index que muestra cómo se relaciona el archivo de datos secuencial con el índice disperso y el área de desbordamiento
 
 ### Técnica 3: Extendible Hashing
-- Descripción de la técnica.
-- Algoritmo de inserción, eliminación y búsqueda.
-- Diagramas o gráficos ilustrativos.
+
+Extendible Hashing es una estructura de datos dinámica que se utiliza para manejar las inserciones y búsquedas eficientes en una base de datos, especialmente cuando el tamaño del conjunto de datos puede cambiar con el tiempo. Esta técnica emplea un directorio de punteros a 'buckets' donde los datos están almacenados. La clave de su adaptabilidad es la capacidad de dividir los 'buckets' que se llenan, aumentando selectivamente la profundidad local de los 'buckets' afectados sin rehashing todos los datos.
+
+#### Algoritmo de Inserción:
+
+Calcular el hash de la clave para determinar el bucket correspondiente.
+Si el bucket no está lleno, insertar el registro.
+Si el bucket está lleno, dividir el bucket:
+Incrementar la profundidad local del bucket.
+Redistribuir las entradas según el nuevo hash.
+Si es necesario, duplicar el tamaño del directorio.
+
+#### Algoritmo de Eliminación:
+
+Calcular el hash de la clave para encontrar el bucket.
+Eliminar el registro del bucket.
+Si el bucket está vacío, considerar la posibilidad de combinarlo con un bucket hermano y disminuir el tamaño del directorio.
+
+
+#### Algoritmo de Búsqueda:
+
+Calcular el hash de la clave.
+Seguir el puntero del directorio al bucket correspondiente.
+Buscar en el bucket el registro deseado.
+
+![image](https://github.com/marcelochincha/BD2-proyecto1/assets/130480550/f3bff377-fcfe-4975-9160-5ca733613d25)
+
+
+Diagrama ilustrativo de la estructura de Extendible Hashing, que muestra cómo funciona el directorio, los buckets, y la división y expansión de estos al llenarse
 
 ## Análisis Comparativo Teórico
 

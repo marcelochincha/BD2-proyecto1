@@ -52,10 +52,10 @@ Eliminar Nodo: Dependiendo de la estructura del nodo (sin hijos, con un hijo, co
         - Sin hijos: Simplemente eliminar el nodo.
         -Un hijo: Eliminar el nodo y conectar su hijo directamente al padre del nodo eliminado.
         -Dos hijos: Encontrar el sucesor inmediato del nodo (el más pequeño en el subárbol derecho), copiar sus datos en el nodo a eliminar y luego eliminar el sucesor.
-3. Rebalancear: Recorrer el camino de vuelta al nodo raíz, verificando y corrigiendo cualquier desbalance mediante rotaciones.
+Rebalancear: Recorrer el camino de vuelta al nodo raíz, verificando y corrigiendo cualquier desbalance mediante rotaciones.
 
 ### Técnica 2: ISAM-Sparse Index / B+ Tree
-ISAM (Indexed Sequential Access Method) es una técnica de indexación que utiliza un índice disperso para mejorar la eficiencia en la búsqueda de registros en archivos de datos secuenciales. La estructura ISAM mantiene los datos en un archivo secuencial, junto con un índice separado que almacena las claves y los punteros a los registros. Los índices ISAM son estáticos en cuanto a su estructura de árbol, pero permiten eficiencia en las búsquedas y son especialmente útiles en entornos donde las consultas son más frecuentes que las actualizaciones.
+ISAM (Indexed Sequential Access Method) es una técnica de indexación que utiliza un índice disperso para mejorar la eficiencia en la búsqueda de registros en archivos de datos secuenciales, esta estructura ISAM mantiene los datos en un archivo secuencial, junto con un índice separado que almacena las claves y los punteros a los registros. Los índices ISAM son estáticos en cuanto a su estructura de árbol, pero permiten eficiencia en las búsquedas y son especialmente útiles en entornos donde las consultas son más frecuentes que las actualizaciones.
 
 #### Algoritmo de Inserción:
 
@@ -78,7 +78,7 @@ Si el registro no está en la página principal, buscar en el área de desbordam
 
 ### Técnica 3: Extendible Hashing
 
-Extendible Hashing es una estructura de datos dinámica que se utiliza para manejar las inserciones y búsquedas eficientes en una base de datos, especialmente cuando el tamaño del conjunto de datos puede cambiar con el tiempo. Esta técnica emplea un directorio de punteros a 'buckets' donde los datos están almacenados. La clave de su adaptabilidad es la capacidad de dividir los 'buckets' que se llenan, aumentando selectivamente la profundidad local de los 'buckets' afectados sin rehashing todos los datos.
+Extendible Hashing es una estructura de datos dinámica que se utiliza para manejar las inserciones y búsquedas eficientes en una base de datos, especialmente cuando el tamaño del conjunto de datos puede cambiar con el tiempo. Esta técnica emplea un directorio de punteros a 'buckets' donde los datos están almacenados, la clave de su adaptabilidad es la capacidad de dividir los 'buckets' que se llenan, aumentando selectivamente la profundidad local de los 'buckets' afectados sin rehashing todos los datos.
 
 #### Algoritmo de Inserción:
 
@@ -113,20 +113,10 @@ Buscar en el bucket el registro deseado.
 | Extendible Hash |                               |                              |                                  |
 | AVL             |                               |                              |                                  |
 
-//ANÁLISIS
-
-| Técnica         | Inserción                   | Búsqueda                  | Eliminación               |
-|-----------------|-----------------------------|---------------------------|---------------------------|
-| ISAM            | Índice + datos/overflow     | Índice + datos            | Índice + marcado          |
-| Extendible Hash | Directorio + bucket/split   | Directorio + bucket       | Directorio + bucket/merge |
-| AVL             |                             |                           |                           |
-
-
-
 
 ## Resultados Experimentales
 
-![image](https://github.com/marcelochincha/BD2-proyecto1/assets/130480550/8e22de4b-fbde-4a57-8384-aff41396e654)
+![image](https://github.com/marcelochincha/BD2-proyecto1/assets/130480550/0c063ffa-230f-4a00-bfec-b4a21108a909)
 
 
 ## Parser SQL

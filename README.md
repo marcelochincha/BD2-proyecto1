@@ -18,6 +18,7 @@ https://drive.google.com/file/d/1lqpbYojrZsNMeX5i6begj5daDFlBQSEn/view?usp=shari
 [Wiki en Github](https://github.com/marcelochincha/BD2-proyecto1/wiki)
 
 ## Compilación y ejecución
+Instalar previamente Qt6 y sus dependencias para desarrollo
 ```bash
 cd build
 cmake ..

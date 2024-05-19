@@ -149,7 +149,7 @@ Pasos:
 
 ![image](https://github.com/marcelochincha/BD2-proyecto1/assets/130480550/7876190a-c920-4c19-9710-c8e3ddea1c94)
 
-El grafico de barras en escala logaritma permite comparar los 3 tipos de indexacion de datos en  5 operaciones respectivas. Se puede concluir que crear las tablas a partir de datos conlleva mas tiempo de lo requerido comparación de las otras operaciones mas simples.
+El grafico de barras en escala logaritma permite comparar los 3 tipos de indexación de datos en  5 operaciones respectivas. Se puede concluir que, crear las tablas a partir de datos conlleva mas tiempo de lo requerido comparación de las otras operaciones mas simples.
 
 Aparte, la operacion "BETWEEN" tiene un rendimiento peor usando ISAM, esto se debe a que se implemento la busqueda por rango utilizando un algoritmo muy sencillo (iteracion y busqueda unitaria) el cual por cuestiones de tiempo, no utiliza la ventaja de ISAM para indexar archivos.
 

@@ -109,6 +109,7 @@ Diagrama ilustrativo de la estructura de Extendible Hashing, que muestra cómo f
 |-----------------|-------------------------------|------------------------------|----------------------------------|
 | ISAM            |                               |                              |                                  |
 | Extendible Hash |                               |                              |                                  |
+| AVL             |                               |                              |                                  |
 
 //ANÁLISIS
 
@@ -116,6 +117,7 @@ Diagrama ilustrativo de la estructura de Extendible Hashing, que muestra cómo f
 |-----------------|-----------------------------|---------------------------|---------------------------|
 | ISAM            | Índice + datos/overflow     | Índice + datos            | Índice + marcado          |
 | Extendible Hash | Directorio + bucket/split   | Directorio + bucket       | Directorio + bucket/merge |
+| AVL             |                             |                           |                           |
 
 
 

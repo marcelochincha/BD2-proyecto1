@@ -42,13 +42,13 @@ Los AVL Files utilizan un Árbol AVL (Adelson-Velsky y Landis) para la organizac
 3. Aplicar rotaciones simples o dobles según sea necesario para asegurar que cada nodo cumpla con la propiedad de balance AVL.
 
 #### Algoritmo de Búsqueda
-1.Comenzar en la raíz y comparar el valor buscado con el valor del nodo.
-2.Descender hacia la izquierda o derecha según si el valor es menor o mayor que el del nodo.
-3.Repetir hasta encontrar el valor o confirmar que el valor no está en el árbol.
+Comenzar en la raíz y comparar el valor buscado con el valor del nodo.
+Descender hacia la izquierda o derecha según si el valor es menor o mayor que el del nodo.
+Repetir hasta encontrar el valor o confirmar que el valor no está en el árbol.
 
 #### Algoritmo de Eliminación
-1. Buscar Nodo: Localizar el nodo que se desea eliminar siguiendo el método estándar de búsqueda en árboles binarios de búsqueda.
-2. Eliminar Nodo: Dependiendo de la estructura del nodo (sin hijos, con un hijo, con dos hijos), proceder a su eliminación.
+Buscar Nodo: Localizar el nodo que se desea eliminar siguiendo el método estándar de búsqueda en árboles binarios de búsqueda.
+Eliminar Nodo: Dependiendo de la estructura del nodo (sin hijos, con un hijo, con dos hijos), proceder a su eliminación.
         - Sin hijos: Simplemente eliminar el nodo.
         -Un hijo: Eliminar el nodo y conectar su hijo directamente al padre del nodo eliminado.
         -Dos hijos: Encontrar el sucesor inmediato del nodo (el más pequeño en el subárbol derecho), copiar sus datos en el nodo a eliminar y luego eliminar el sucesor.
@@ -103,15 +103,30 @@ Seguir el puntero del directorio al bucket correspondiente.
 Buscar en el bucket el registro deseado.
 
 ## Análisis Comparativo Teórico
-![image](https://github.com/marcelochincha/BD2-proyecto1/assets/130480550/551c13f0-60c6-479a-93a1-8b15f8760b55)
 
+
+//TABLA VACÍA
+
+| Técnica         | Inserción (accesos a memoria) | Búsqueda (accesos a memoria) | Eliminación (accesos a memoria) |
+|-----------------|-------------------------------|------------------------------|----------------------------------|
+| ISAM            |                               |                              |                                  |
+| Extendible Hash |                               |                              |                                  |
+| AVL             |                               |                              |                                  |
+
+//ANÁLISIS
+
+| Técnica         | Inserción                   | Búsqueda                  | Eliminación               |
+|-----------------|-----------------------------|---------------------------|---------------------------|
+| ISAM            | Índice + datos/overflow     | Índice + datos            | Índice + marcado          |
+| Extendible Hash | Directorio + bucket/split   | Directorio + bucket       | Directorio + bucket/merge |
+| AVL             |                             |                           |                           |
 
 
 
 
 ## Resultados Experimentales
 
-![image](https://github.com/marcelochincha/BD2-proyecto1/assets/130480550/8e22de4b-fbde-4a57-8384-aff41396e654)
+![image](https://github.com/marcelochincha/BD2-proyecto1/assets/130480550/8e22de4b-fbde-4a57-8384-aff41396e654){width=500px}
 
 
 ## Parser SQL

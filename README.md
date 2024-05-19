@@ -103,31 +103,16 @@ Seguir el puntero del directorio al bucket correspondiente.
 Buscar en el bucket el registro deseado.
 
 ## Análisis Comparativo Teórico
+![image](https://github.com/marcelochincha/BD2-proyecto1/assets/130480550/551c13f0-60c6-479a-93a1-8b15f8760b55)
 
-//TABLA VACÍA
-
-| Técnica         | Inserción (accesos a memoria) | Búsqueda (accesos a memoria) | Eliminación (accesos a memoria) |
-|-----------------|-------------------------------|------------------------------|----------------------------------|
-| ISAM            |                               |                              |                                  |
-| Extendible Hash |                               |                              |                                  |
-| AVL             |                               |                              |                                  |
-
-//ANÁLISIS
-
-| Técnica         | Inserción                   | Búsqueda                  | Eliminación               |
-|-----------------|-----------------------------|---------------------------|---------------------------|
-| ISAM            | Índice + datos/overflow     | Índice + datos            | Índice + marcado          |
-| Extendible Hash | Directorio + bucket/split   | Directorio + bucket       | Directorio + bucket/merge |
-| AVL             |                             |                           |                           |
 
 
 
 
 ## Resultados Experimentales
 
-- Cuadros y/o gráficos comparativos del desempeño de las técnicas sobre el dominio de datos.
-- Métricas evaluadas: total de accesos a disco duro (read & write) y tiempo de ejecución en milisegundos.
-- Discusión y análisis de los resultados obtenidos.
+![image](https://github.com/marcelochincha/BD2-proyecto1/assets/130480550/8e22de4b-fbde-4a57-8384-aff41396e654)
+
 
 ## Parser SQL
 

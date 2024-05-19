@@ -137,7 +137,7 @@ Pasos:
 
 | Técnica         | Inserción (accesos a memoria) | Búsqueda (accesos a memoria) | Eliminación (accesos a memoria) |
 |-----------------|-------------------------------|------------------------------|----------------------------------|
-| ISAM            |   O(logk) BC / O(k*m) WC      |        O(logk)               |        O(logk) BC / O(k*m) WC    |
+| ISAM            |  O(k*m)                       |        O(logk)               |           O(k*m)                 |
 | Extendible Hash |   O(k*m)                      |       O(k*m)                 |           O(k*m)                 | 
 | AVL             |   O(logk)                     |         O(logk)              |           O(logk)                |
 
